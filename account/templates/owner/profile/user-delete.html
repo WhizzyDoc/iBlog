@@ -1,0 +1,77 @@
+{% extends 'owner/base.html' %}
+{% load static %}
+{% load thumbnail %}
+
+{% block title %}Delete User{% endblock title %}
+{% block active12 %}active{% endblock %}
+{% block style %}
+    <style>
+        .breadcrumb {
+            padding: 10px;
+            font-size: 20px;
+            background: none;
+        }
+        .breadcrumb a {
+            color: red;
+            font-size: 20px;
+            font-weight: 600;
+        }
+        .form {
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+            background: #fff;
+            text-align: center;
+            box-shadow: 0px 0px 15px rgba(0,0,0,0.2);
+        }
+        .form form{
+            margin: 20px 0;
+            margin-bottom: 0;
+        }
+        .form header{
+            padding-top: 5px;
+            font-size: 27px;
+            font-weight: 600;
+            line-height: 33px;
+        }
+        .form button{
+            margin: 20px;
+            width: 80%;
+            height: 45px;
+            border: none;
+            outline: none;
+            border-radius: 5px;
+            color: #f2f2f2;
+            font-size: 18px;
+            font-weight: 500;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        form button:hover{
+            opacity: 0.8;
+        }
+        
+    </style>
+{% endblock %}
+
+{% block content %}
+
+<div class="breadcrumb">
+    <a href="{% url 'admin_dashboard' %}">Home</a>&nbsp;&nbsp;&gt;&gt;&nbsp;&nbsp;
+    <a href="{% url 'user_list' %}">Users</a>&nbsp;&nbsp;&gt;&gt;&nbsp;&nbsp;
+    <a href="#">{{ user.username }}</a>&nbsp;&nbsp;&gt;&gt;&nbsp;&nbsp;
+    <a href="#">Delete</a>
+</div>
+
+<div class="form">
+    <header>Delete {{ user.username }}&apos; Account?</header>
+    <form method="POST" action="{% url 'user_delete' user.username %}">
+        {% csrf_token %}
+        
+        <button type="submit" style="background:rgb(138, 5, 5);"><i class="fa fa-times"></i> Yes, Delete</button>
+    </form>
+    <a href="{% url 'user_list' %}"><button style="background:rgb(3, 119, 38);"><i class="fa fa-undo"></i> No, Go Back</button></a>
+</div>
+
+{% endblock %}

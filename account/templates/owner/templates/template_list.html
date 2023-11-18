@@ -1,0 +1,71 @@
+{% extends 'owner/base/base.html' %}
+{% load static %}
+{% load thumbnail %}
+
+{% block title %}Templates{% endblock title %}
+{% block active4 %}active{% endblock %}
+{% block style %}
+    <style>
+        .breadcrumb {
+            padding: 10px;
+            font-size: 20px;
+            background: none;
+        }
+        .breadcrumb a {
+            color: red;
+            font-size: 20px;
+            font-weight: 600;
+        }
+        #search-form {
+            float: right;
+            clear: both;
+            content: "";
+        }
+        #search {
+             padding: 10px;
+            min-width: 250px;
+            outline: none;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            font-size: 18px;
+        }
+        #search:focus {
+            border: 3px solid rgb(112, 112, 199);
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12 w-padding">
+            <form action="/user/templates/" method="get" class="form-group w-flex">
+                <input type="text" class="form-control" id="query" name="query" placeholder="Search Template">
+                <button type="submit" class="btn btn-primary"><i class="fa fa-search"></i></button>
+            </form>
+        </div>
+        {% for t in templates %}
+            <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 w-padding">
+                <img class="" src="{% if t.image %}{{ t.image.url }}{% else %}{% endif %}" height="200px" width="100%" alt="" />
+                <div class="w-block">
+                    <h4 class="w-bold-xx w-padding-4">{{ t.title }}</h4>
+                    <div class="w-flex w-flex-between w-align-center">
+                        <button class="btn btn-danger" style="width:47%"><i class="fa fa-eye"></i> Preview</button>
+                        {% if t == site.template %}
+                        <button class="btn btn-success" style="width:47%"><i class="fa fa-check"></i> Active</button>
+                        {% else %}
+                        <button class="btn btn-primary" style="width:47%"><i class="fa fa-gear"></i> Activate</button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+        {% endfor %}
+    </div>
+
+{% endblock %}
+
+{% block script %}
+<script>
+  
+</script>
+{% endblock %}

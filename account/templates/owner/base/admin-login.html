@@ -1,0 +1,123 @@
+{% load static %}
+{% load thumbnail %}
+<!DOCTYPE html> 
+<!-- Created By Rigan Tech -->
+<html lang="en" dir="ltr">
+   <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Admin Login</title>
+      <script src="/media/assets/js/jquery-3.6.1.min.js"></script>
+      <script src="/media/assets/js/popper.min.js"></script>
+      <script src="/media/assets/js/sweetalert.min.js"></script>
+      <script src="/media/assets/js/bootstrap.min.js"></script>
+      <link rel="stylesheet" href="/media/assets/css/login.css">
+      <link rel="stylesheet" href="/media/assets/css/sweetalert.min.css"/>
+      <link rel="stylesheet" href="/media/assets/css/fontawesome.css"/>
+      <link rel="stylesheet" href="/media/assets/css/bootstrap.min.css"/>
+   </head>
+   <body>
+      <div class="content">
+         {% if messages %}
+            <ul class="messages" style="list-style-type:none;">
+               {% for message in messages %}
+                  <li class="alert alert-dismissible alert-{{ message.tags }}"><i class="fa fa-{{ message.tags }}"></i>
+                     {{ message|safe }} <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                  </li>
+               {% endfor %}
+            </ul>
+         {% endif %}
+         <header>Admin Login</header>
+         <form id="login-form">
+            <div class="field">
+               <input id="username" name="username" type="text" autocomplete="off" placeholder="Enter Username">
+               <div class="icons">
+                  <span class="icon2 fa fa-user"></span>
+               </div>
+            </div>
+            <div class="field">
+               <input id="password" name="password" type="password" autocomplete="off" placeholder="Enter Password">
+               <div class="icons">
+                  <span class="icon2 fa fa-eye" id="pass"></span>
+               </div> 
+            </div>
+            <button type="submit" id="login-btn">Login</button>
+            <p>New user? <a href="/user/register/">Register</a></p>
+         </form>
+      </div>
+      <script>
+         function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        // does the cookie has the same name as the one we want
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+            const csrftoken = getCookie('csrftoken');
+         
+         var password = document.querySelector('#password');
+         var pass = document.querySelector('#pass');
+         pass.onclick = function() {
+            if(password.type == "password") {
+               password.type = "text";
+            }
+            else {
+               password.type = "password";
+            }
+         }
+
+         $('#login-form').submit(function(e) {
+        e.preventDefault();
+        var login_url = "/user/login/";
+            const formData = new FormData();
+            formData.append('username', $('#username').val());
+            formData.append('password', $('#password').val());
+            
+            $('#login-btn').text('Submitting').attr('disabled', true);
+    
+            fetch(login_url, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest', // necessary to work with .is_ajax verification
+                    'X-CSRFToken': csrftoken,
+                },
+                body: formData,
+            })
+            .then(response => {
+                return response.json() // convert response to json
+            })
+            .then(data => {
+                    // perform action with response data
+                    var msg = data['status'];
+                    if(msg == 'success') {
+                      location.href = '/user/index/';
+                    }
+                    else if(msg == 'error') {
+                      var reason = data['message'];
+                      $(function() {
+                        swal('Error', reason, "error");
+                    });
+                    }
+                    $('#login-btn').text('Login').attr('disabled', false);
+                    
+            })
+            .catch(error => {
+              alert("Error Occured")
+                    $(function() {
+                        swal('Error', "Error occured", "error");
+                    })
+                })
+              })
+      </script>
+   </body>
+</html>

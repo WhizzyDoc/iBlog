@@ -1,0 +1,25 @@
+{% extends 'owner/base/base.html' %}
+{% load static %}
+{% load thumbnail %}
+
+{% block title %}Dashboard{% endblock title %}
+{% block active1 %}active{% endblock %}
+{% block style %}
+    <style>
+        h3 {font-weight:700;}
+    </style>
+{% endblock %}
+
+{% block content %}
+
+<h3>Welcome back {{ profile.firstName }}!</h3>
+
+
+
+{% endblock %}
+
+{% block script %}
+<script>
+
+</script>
+{% endblock %}

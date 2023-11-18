@@ -1,0 +1,170 @@
+{% load static %}
+{% load thumbnail %}
+<!DOCTYPE html>
+<!-- Created By Rigan Tech -->
+<html lang="en" dir="ltr">
+   <head> 
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Registration</title>
+      <script src="/media/assets/js/jquery-3.6.1.min.js"></script>
+      <script src="/media/assets/js/popper.min.js"></script>
+      <script src="/media/assets/js/sweetalert.min.js"></script>
+      <link rel="stylesheet" href="/media/assets/css/register.css">
+      <link rel="stylesheet" href="/media/assets/css/sweetalert.min.css"/>
+      <link rel="stylesheet" href="/media/assets/css/fontawesome.css"/>
+      <link rel="stylesheet" href="/media/assets/css/bootstrap.min.css"/>
+   </head>
+   <body>
+         <div class="container">
+            {% if messages %}
+               <ul class="messages" style="list-style-type:none;">
+                  {% for message in messages %}
+                     <li class="alert alert-dismissible alert-{{ message.tags }}"><i class="fa fa-{{ message.tags }}"></i>
+                        {{ message|safe }} <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                     </li>
+                  {% endfor %}
+               </ul>
+            {% endif %}
+            <header>Signup Form</header>
+   
+            <div class="form-outer">
+   
+              <form action="#" id="signup-form" autocomplete="off" spellcheck="false">
+   
+                <div class="page slide-page">
+                  <div class="field">
+                    <div class="label"><span class="req">*</span> First Name</div>
+                    <input type="text" id="first-name" required>
+                  </div>
+                  <div class="field">
+                    <div class="label"><span class="req">*</span> Last Name</div>
+                    <input type="text" id="last-name" required>
+                  </div>
+                  <div class="field">
+                    <button class="firstNext next">Next</button>
+                  </div>
+                </div>
+      
+                <div class="page">
+                  <div class="field">
+                    <div class="label"><span class="req">*</span> Email Address</div>
+                    <input type="email" id="email" placeholder="e.g youremail@domain.com" required>
+                  </div>
+                  <div class="field">
+                    <div class="label"><span class="req">*</span> Phone Number</div>
+                    <input type="tel" id="phone-number" placeholder="e.g 08012345678" required>
+                  </div>
+                  <div class="field btns">
+                    <button class="prev-1 prev">Previous</button>
+                    <button class="next-1 next">Next</button>
+                  </div>
+                </div>
+      
+                <div class="page">
+                  <div class="field">
+                   <div class="label">About Yourself</div>
+                   <textarea id="bio" value=""></textarea>
+                 </div>
+                  <div class="field btns">
+                    <button class="prev-2 prev">Previous</button>
+                    <button class="next-2 next">Next</button>
+                  </div>
+                </div>
+      
+                <div class="page">
+                  <div class="field">
+                    <div class="label"><span class="req">*</span> Username</div>
+                    <input type="text" id="username" required>
+                  </div>
+                  <div class="field">
+                    <div class="label"><span class="req">*</span> Password <span class="icon2 fa fa-eye" id="pass"></span></div>
+                    <input type="password" id="password" required>
+                  </div>
+                  <div class="field">
+                     <div class="label"><span class="req">*</span> Confirm Password <span class="icon2 fa fa-eye" id="cpass"></span></div>
+                     <input type="password" id="cpassword" required>
+                   </div>
+                  <div class="field btns">
+                    <button class="prev-3 prev">Previous</button>
+                    <button type="submit" class="submit">Register</button>
+                  </div>
+                </div>
+              </form>
+   
+            </div>
+   
+            <h5>Already A User? <a href="/user/login/">Login</a></h5><br>
+          </div>
+          <script src="/media/assets/js/register.js"></script>
+      <script>
+         $('.submit').click(function(e) {
+        e.preventDefault();
+        var register_url = `/user/register/`;
+        var usernameRegex = /^[a-zA-Z0-9_\-]+$/;
+        var passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d).{8,}$/;
+        if(!usernameRegex.test($('#username').val())) {
+            swal('Warning', 'Invalid username', 'warning');
+            return
+        }
+        if($('#password').val().length < 8) {
+            swal('Warning', 'Password must be at least 8 characters long', 'warning');
+            return
+        }
+        if($('#password').val() != $('#cpassword').val()) {
+            swal("Error", 'Passwords do not match', "error");
+            return;
+        }
+        if(!passwordRegex.test($('#password').val())) {
+            swal('Warning', 'Password must contain letters and numbers', 'warning');
+            return
+        }
+        const formData = new FormData();
+        formData.append('username', $('#username').val())
+        formData.append('email', $('#email').val())
+        formData.append('firstName', $('#first-name').val())
+        formData.append('lastName', $('#last-name').val())
+        formData.append('phoneNumber', $('#phone-number').val())
+        formData.append('password', $('#password').val())
+            
+            $('.submit').html(`<div class="loader"></div>`).attr('disabled', true);
+    
+            fetch("/user/register/", {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest', // necessary to work with .is_ajax verification
+                    'X-CSRFToken': csrftoken,
+                },
+                body: formData,
+            })
+            .then(response => {
+               if(!response.ok) {
+                  throw new Error('Network response was not ok');
+               }
+                return response.json() // convert response to json
+            })
+            .then(data => {
+                    // perform action with response data
+                    var msg = data['status'];
+                    if(msg == 'success') {
+                     swal("Success", "Registration Successful", "success");
+                      location.href = '/user/login/';
+                    }
+                    else if(msg == 'error') {
+                     swal("Error", data['message'], "error");
+                    }
+                    $('.submit').empty().text('Register').attr('disabled', false);
+                    
+            })
+            .catch(error => {
+              console.log(error);
+              $('.submit').empty().text('Register').attr('disabled', false);
+              })
+      })
+      </script>
+      
+      
+   </body>
+</html>
