@@ -44,6 +44,7 @@ function getCategories() {
 function getBlogs() {
     let stat = $('.status-filter').val()
     let feat = $('.feat-filter').val()
+    let cat = $('.cat-filter').val()
     let per_p = $('.per-page-filter').val()
     let search = $('#search').val()
     let page = $('#page').val()
