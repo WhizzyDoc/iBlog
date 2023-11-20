@@ -20,6 +20,7 @@ class BlogCategory(models.Model):
 class Tag(models.Model):
     owner = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name="blog_tags", null=True, blank=True)
     title = models.CharField(max_length=250, null=True, blank=True)
+    slug = models.SlugField(unique=True, null=True, blank=True)
     def __str__(self):
         return self.title
     class Meta:
@@ -46,6 +47,7 @@ class Comment(models.Model):
     blog = models.ForeignKey(Blog, on_delete=models.CASCADE, related_name="comments")
     name = models.CharField(max_length=150)
     comment = models.TextField()
+    active = models.BooleanField(default=True)
     date = models.DateTimeField(default=timezone.now)
     def __str__(self):
         return self.comment

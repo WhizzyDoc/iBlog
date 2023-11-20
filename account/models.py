@@ -35,6 +35,7 @@ class Template(models.Model):
 class Site(models.Model):
     owner = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name="site")
     title = models.CharField(null=True, blank=True, max_length=100)
+    slug = models.SlugField(unique=True, null=True, blank=True)
     tagline = models.CharField(null=True, blank=True, max_length=250)
     description = models.TextField(null=True, blank=True)
     about = HTMLField(null=True, blank=True)

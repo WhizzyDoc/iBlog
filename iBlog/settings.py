@@ -43,7 +43,6 @@ INSTALLED_APPS = [
     'easy_thumbnails',
     'rest_framework',
     'tinymce',
-    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -87,6 +86,19 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+"""
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'iblog',
+        'USER': 'root',
+        'PASSWORD': 'iblog12345',
+        'HOST': 'localhost',
+        'PORT': '3306',
+    }
+}
+"""
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
@@ -143,8 +155,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # REDIS_PORT = 6379
 # REDIS_DB = 0
 
-CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOW_CREDENTIALS = True
 """
 CORS_ALLOWED_ORIGINS = [
     'https://frontend-domain.com'
@@ -152,3 +162,12 @@ CORS_ALLOWED_ORIGINS = [
 """
 
 ENCRYPT_KEY = b''
+"""
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587  # Port for the SMTP server (usually 587 for TLS)
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+EMAIL_HOST_USER = 'encrane04@gmail.com'  # Your email
+EMAIL_HOST_PASSWORD = 'ikzx hqix nvry bcis'  # Your generated password
+"""

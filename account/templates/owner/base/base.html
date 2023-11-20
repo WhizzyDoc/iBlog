@@ -2,7 +2,7 @@
 {% load thumbnail %}
 <!doctype html>
 <html>
-    <head>
+    <head> 
       <title>{% if site %}{{ site.title }}{% else %}iBlog{% endif %} - {% block title %}{% endblock %}</title>
       <meta charset="UTF-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -42,40 +42,40 @@
         background: rgba(0, 0, 0, 0.7);
         align-items: center;
       }
-      .loader-container .loader {
+      .loader {
         width: 120px;
-        height: 75px;
+        height: 50px;
         display: flex;
         flex-wrap: wrap;
         align-items: flex-end;
         justify-content: space-between;
       }
-      .loader-container .loader span {
-        font-size: 22px;
+      .loader span {
+        font-size: 20px;
         text-transform: uppercase;
         margin: auto;
         color: #fff;
       } 
-      .loader-container .loader .ball {
-        width: 25px;
-        height: 25px;
+      .loader .ball {
+        width: 20px;
+        height: 20px;
         border-radius: 50%;
         background: #fff;
         animation: wbounce .4s alternate infinite;
       }
-      .loader-container .loader .ball:nth-child(2) {
+      .loader .ball:nth-child(2) {
         animation-delay: .13s;
       }
-      .loader-container .loader .ball:nth-child(3) {
+      .loader .ball:nth-child(3) {
         animation-delay: .26s;
       }
       @keyframes wbounce {
         from {transform: scaleX(1.25)}
-        to {transform: translateY(-50px) scaleX(1)}
+        to {transform: translateY(-30px) scaleX(1)}
       }
       @-webkit-keyframes wbounce {
         from {transform: scaleX(1.25)}
-        to {transform: translateY(-50px) scaleX(1)}
+        to {transform: translateY(-30px) scaleX(1)}
       }
       main {
     padding: 20px;
@@ -258,8 +258,9 @@
 
       </main>
 
-      {% block script %}{% endblock %}
+      
 
+      <script src="/media/assets/js/functions.js"></script>
       <script src="/media/assets/js/script.js"></script>
       <script>
         $('.loader-container').hide();
@@ -286,5 +287,6 @@
       });
       */
     </script>
+    {% block script %}{% endblock %}
     </body>
 </html>

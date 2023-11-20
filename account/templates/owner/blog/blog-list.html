@@ -41,19 +41,35 @@
     <a href="/user/blogs/">Blogs</a> 
 </div>
 
-<form action="/user/blogs/" method="GET" id="search-form">
-    <div class="form-group">
-        <input type="text" name="q" id="search" placeholder="Search blogs" autofocus />
-        <button type="submit" class="btn btn-primary btn-lg"><i class="fa fa-search"></i> Search</button>
+<form>
+    <div class="form-group mb-2">
+        <input type="text" class="form-control" id="search" value="" placeholder="Search blogs">
     </div>
 </form>
 
-    <h4>
-        <span style="font-weight:800;padding:10px;">Blogs ({{ blogs.count }})</span>
-    </h4>
-    {% if query %}
-        <h4>Showing results for <span style="font-weight:600;">"{{ query }}"</span> in <span style="font-weight:600;">blogs</span></h4>
-    {% endif %}
+    <form class="w-flex mb-2">
+        <input type="hidden" id="page" value="1">
+        <select class="custom-select filter per-page-filter">
+            <option disabled>Items per page</option>
+            <option value="10">10</option>
+            <option selected value="20">20</option>
+            <option value="30">30</option>
+        </select>
+        <select class="custom-select filter cat-filter">
+          <option selected value="">All Categories</option>
+        </select>
+        <select class="custom-select filter status-filter">
+            <option selected value="all">All Status</option>
+            <option value="Published">Published</option>
+            <option value="Draft">Draft</option>
+        </select>
+        <select class="custom-select filter feat-filter">
+            <option selected value="all">All Posts</option>
+            <option value="true">Featured</option>
+            <option value="false">Non Featured</option>
+        </select>
+    </form>
+
     <div class="table-responsive">
         <table class="table table-striped table-bordered">
             <thead class="thead-dark">
@@ -64,43 +80,16 @@
                 <th>Date</th>
             </tr>
             </thead>
-            <tbody>
-                
-                {% for b in blogs %}
-                    <tr class="w-small">
-                        <td>
-                            <div class="w-bold-x">{{ b.title }}</div>
-                            <p class="mt-2">
-                                <a href="#" class="w-text-blue">Edit</a>&nbsp;|&nbsp;
-                                <a href="#" class="w-text-red">Delete</a>&nbsp;|&nbsp;
-                                {% if b.status == "Published" %}
-                                <a href="#" class="w-text-brown">Unpublish</a>&nbsp;|&nbsp;
-                                {% else %}
-                                <a href="#" class="w-text-green">Publish</a>&nbsp;|&nbsp;
-                                {% endif %}
-                                <a href="#" class="w-text-blue">Comments ({{ b.comments.count }})</a>
-                            </p>
-                        </td>
-                        <td>{{ b.category.title }}</td>
-                        <td style="font-size:15px;text-align:center;">
-                            {% if b.featured %}
-                                <i class="fa fa-check-circle" style="color:green;"></i>
-                            {% else %}
-                                <i class="fa fa-times" style="color:red"></i>
-                            {% endif %}
-                        </td>
-                        <td>{{ b.created }}</td>
-                    </tr>
-                    {% empty %}
-                     <tr>
-                        <td colspan="8">You don't have any blogs yet.</td>
-                     </tr>
-                            
-                {% endfor %}
-                
-                   
-                 
-                
+            <tbody class="blog-table">
+                <tr>
+                    <td colspan="4" class="w-center">
+                    <div class="loader">
+                        <div class="ball w-black"></div>
+                        <div class="ball w-black"></div>
+                        <div class="ball w-black"></div>
+                    </div>
+                    </td>
+                </tr>
             </tbody>
         </table>
     </div>
@@ -109,6 +98,13 @@
 
 {% block script %}
 <script>
-  
+    getCategories();
+    getBlogs();
+    $('.filter').change(function() {
+        getBlogs();
+    })
+    $('#search').on('input', function() {
+        getBlogs();
+    })
 </script>
 {% endblock %}

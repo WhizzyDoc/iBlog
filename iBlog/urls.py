@@ -23,6 +23,7 @@ handler404 = 'account.views.custom_404'
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('user/', include('account.urls')),
+    path('api/v2/', include('account.api.urls')),
     path('', include('blog.urls')),
     path('api/v1/', include('blog.api.urls')),
 ]

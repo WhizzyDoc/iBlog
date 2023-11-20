@@ -24,6 +24,7 @@ def custom_404(request, exception):
     return render(request, 'user/404.html', status=404)
 
 # Create your views here.
+@csrf_exempt
 def admin_login(request):
     if request.headers.get('x-requested-with') == 'XMLHttpRequest' and request.method == 'POST':
         username = sterilize(request.POST.get('username'))
@@ -45,6 +46,7 @@ def admin_login(request):
             })
     return render(request, "owner/base/admin-login.html")
 
+@csrf_exempt
 def register(request):
     if request.headers.get('x-requested-with') == 'XMLHttpRequest' and request.method == 'POST':
         email = request.POST.get('email')
@@ -150,7 +152,21 @@ def template_list(request):
 @login_required(login_url="login")
 def blog_list(request):
     profile = Profile.objects.get(user=request.user)
-    blogs = Blog.objects.filter(author=profile)
+    try:
+        site = Site.objects.get(owner=profile)
+        return render(request, "owner/blog/blog-list.html", {
+            'profile': profile,
+            'site': site
+        })
+    except:
+        return render(request, "owner/blog/blog-list.html", {
+            'profile': profile
+        })
+
+@login_required(login_url="login")
+def blog_detail(request, slug):
+    profile = Profile.objects.get(user=request.user)
+    blog = Blog.objects.get(slug=slug)
     query = None
     if request.method == "GET":
         query = request.GET.get('q')

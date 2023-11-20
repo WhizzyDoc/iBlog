@@ -14,3 +14,7 @@ function getCookie(name) {
   return cookieValue;
 }
 const csrftoken = getCookie('csrftoken'); 
+
+$(document).ready(function() {
+    
+})

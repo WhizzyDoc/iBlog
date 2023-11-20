@@ -17,10 +17,10 @@ from django.db.models import Q
 import requests
 
 # Create your views here.
-def home(request, title):
-    profile = Profile.objects.get(user=request.user)
+def home(request, slug):
     try:
-        site = Site.objects.get(title=title)
+        site = Site.objects.get(slug=slug)
+        profile = site.owner
         if site is not None:
             if site.template:
                 latest_posts = Blog.objects.filter(author=profile, status="Published")[:4]
