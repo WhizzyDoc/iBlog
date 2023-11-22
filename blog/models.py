@@ -11,7 +11,7 @@ from account.models import Profile
 class BlogCategory(models.Model):
     owner = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name="blog_categories_created", null=True, blank=True)
     title = models.CharField(max_length=250, null=True, blank=True)
-    slug = models.SlugField(unique=True, null=True, blank=True)
+    slug = models.SlugField(null=True, blank=True)
     def __str__(self):
         return self.title
     class Meta:
@@ -33,9 +33,11 @@ class Blog(models.Model):
     category = models.ForeignKey(BlogCategory, on_delete=models.DO_NOTHING, related_name="blogs", null=True, blank=True)
     post = HTMLField(null=True, blank=True)
     image = models.ImageField(upload_to="blogs/images/", null=True, blank=True)
-    featured = models.BooleanField(default=False)
+    featured = models.BooleanField(default=True)
     tags = models.ManyToManyField(Tag, blank=True, related_name="blogs")
     status = models.CharField(max_length=100, default="Draft", choices=(("Draft", "Draft"),("Published", "Published")))
+    meta_keywords = models.CharField(max_length=2000, null=True, blank=True)
+    meta_description = models.TextField(null=True, blank=True)
     created = models.DateTimeField(default=timezone.now)
     
     def __str__(self):

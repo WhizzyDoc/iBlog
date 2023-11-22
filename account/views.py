@@ -46,14 +46,14 @@ def admin_login(request):
             })
     return render(request, "owner/base/admin-login.html")
 
-@csrf_exempt
+@csrf_protect
 def register(request):
     if request.headers.get('x-requested-with') == 'XMLHttpRequest' and request.method == 'POST':
         email = request.POST.get('email')
-        firstName = sterilize(request.POST.get('firstName'))
-        lastName = sterilize(request.POST.get('lastName'))
-        phoneNumber = sterilize(request.POST.get('phoneNumber'))
-        username = sterilize(request.POST.get('username'))
+        firstName = request.POST.get('firstName')
+        lastName = request.POST.get('lastName')
+        phoneNumber = request.POST.get('phoneNumber')
+        username = request.POST.get('username')
         password = request.POST.get('password')
 
         # check if username and email does not exist
@@ -71,10 +71,12 @@ def register(request):
                         new_user = User(username=username, email=email, first_name=firstName, last_name=lastName)
                         new_user.set_password(password)
                         new_user.save()
+                        print("user created")
                         # create a new profile for user
                         api_key = generate_token()
                         profile = Profile(user=new_user, firstName=firstName, lastName=lastName, email=email, phone_number=phoneNumber, api_key=api_key)
                         profile.save()
+                        print("profile created")
                         # return success status
                         return JsonResponse({
                             'status': 'success',
@@ -129,6 +131,32 @@ def index(request):
         })
 
 @login_required(login_url="login")
+def create_site(request):
+    profile = Profile.objects.get(user=request.user)
+    try:
+        site = Site.objects.get(owner=profile)
+        return render(request, f"error_404.html", {
+            'site': site,
+        })
+    except Site.DoesNotExist:
+        return render(request, 'owner/site/create_site.html', {
+            'profile': profile,
+        })
+        
+
+@login_required(login_url="login")
+def edit_site(request):
+    profile = Profile.objects.get(user=request.user)
+    try:
+        site = Site.objects.get(owner=profile)
+        return render(request, 'owner/site/edit_site.html', {
+            'profile': profile,
+            'site': site,
+        })
+    except Site.DoesNotExist:
+        return render(request, f"error_404.html")
+
+@login_required(login_url="login")
 def template_list(request):
     profile = Profile.objects.get(user=request.user)
     templates = Template.objects.all()
@@ -164,26 +192,47 @@ def blog_list(request):
         })
 
 @login_required(login_url="login")
-def blog_detail(request, slug):
+def add_blog(request):
     profile = Profile.objects.get(user=request.user)
-    blog = Blog.objects.get(slug=slug)
-    query = None
-    if request.method == "GET":
-        query = request.GET.get('q')
-        if query:
-            blogs = Blog.objects.filter(author=profile, title__icontains=query)
-    try:
-        site = Site.objects.get(owner=profile)
-        return render(request, "owner/blog/blog-list.html", {
-            'profile': profile,
-            'site': site,
-            'blogs': blogs,
-            'query': query
-        })
-    except:
-        return render(request, "owner/blog/blog-list.html", {
-            'profile': profile,
-            'blogs': blogs,
-            'query': query
-        })
+    site = Site.objects.get(owner=profile)
+    tags = Tag.objects.filter(owner=profile)
+    categories = BlogCategory.objects.filter(owner=profile)
+    return render(request, "owner/blog/add-blog.html", {
+        'profile': profile,
+        'site': site,
+        'tags': tags,
+        'categories': categories
+    })
+
+@login_required(login_url="login")
+def edit_blog(request, id):
+    profile = Profile.objects.get(user=request.user)
+    blog = Blog.objects.get(id=int(id), author=profile)
+    tags = Tag.objects.filter(owner=profile)
+    categories = BlogCategory.objects.filter(owner=profile)
+    site = Site.objects.get(owner=profile)
+    return render(request, "owner/blog/edit-blog.html", {
+        'profile': profile,
+        'site': site,
+        'blog': blog,
+        'tags': tags,
+        'categories': categories
+    })
     
+@login_required(login_url="login")
+@csrf_protect
+def delete_blog(request, id):
+    profile = Profile.objects.get(user=request.user)
+    if request.method == 'POST':
+        try:
+            blog = Blog.objects.get(id=id, author=profile)
+            blog.delete()
+            messages.success(request, f"Post \'{blog.title}\' deleted successfully")
+            return redirect('blog_list')
+        except:
+            messages.warning(request, "Post does not exist anymore")
+            return redirect('blog_list')
+    else:
+        messages.warning(request, "Unauthorized request method")
+        return redirect('blog_list')
+        

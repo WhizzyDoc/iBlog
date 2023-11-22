@@ -1,0 +1,312 @@
+{% extends 'owner/base/base.html' %}
+{% load static %}
+{% load thumbnail %}
+{% block title %}Edit "{{ blog.title }}"{% endblock title %}
+{% block active3 %}active{% endblock %}
+{% block style %}
+    <style>
+        .breadcrumb {
+            padding: 10px;
+            font-size: 16px;
+            background: none;
+        }
+        .breadcrumb a {
+            color: red;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .form {
+            width: 100%;
+            background: transparent;
+            text-align: left;
+        }
+        .form form .field{
+            width: 100%;
+            padding: 10px;
+            position: relative;
+        }
+        .form form .col-12 {
+            padding: 8px;
+        }
+        form .field input, form .field select, form .field textarea{
+            width: 100%;
+            height: 50px;
+            border: 1px solid lightgrey;
+            border-radius: 5px;
+            padding-left: 15px;
+            font-size: 18px;
+            outline: none;
+        }
+        form .field select {
+            height: 50px;
+        }
+        form .field textarea {
+            resize: none;
+            height: 500px;
+            
+        }
+        form .field label {
+            width: 100%;
+            font-weight: 500;
+            font-size: 16px;
+            text-align: left;
+        }
+        .form header{
+            padding-top: 5px;
+            font-size: 27px;
+            font-weight: 600;
+            line-height: 33px;
+        }
+        form button{
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        
+    </style>
+{% endblock %}
+
+{% block content %}
+
+<div class="breadcrumb">
+    <a href="/user/blogs/">Posts</a>&nbsp;&nbsp;&gt;&gt;&nbsp;&nbsp;
+    <a href="/user/blogs/{{ blog.id }}/edit/">Edit Post</a>&nbsp;&nbsp;
+    <a href="/user/blogs/add/"><button class="btn btn-success">New Post</button></a>
+</div>
+<div class="form">
+    <form id="blog-edit-form" class="row">
+        {% csrf_token %}
+
+        <div class="col-12 col-sm-12 col-md-8 col-lg-9 col-xl-9">
+            <div class="field">
+                <label for="title"><span class="w-text-red">*</span> Title</label>
+                <input type="text" id="title" value="{{ blog.title }}" />
+            </div>
+            <div class="field">
+                <label for="post"><span class="w-text-red">*</span> Post</label>
+                <textarea class="post" id="post" value="{{ blog.post|safe }}">{{ blog.post|safe }}</textarea>
+            </div>
+            <!-- meta description simulation -->
+            <!-- Nav tabs -->
+            <ul class="nav nav-tabs">
+                <li class="nav-item">
+                <a class="nav-link active" data-toggle="tab" href="#mobile">Mobile result</a>
+                </li>
+                <li class="nav-item">
+                <a class="nav-link" data-toggle="tab" href="#desktop">Desktop result</a>
+                </li>
+            </ul>
+            
+            <!-- Tab panes -->
+            <div class="tab-content">
+                <div class="tab-pane active container w-white" id="mobile">
+                    <div class="w-padding">
+                        <div class="w-flex w-flex-start w-align-center">
+                            {% if site.icon %}
+                            <img src="{{ site.icon.url }}" alt="" style="width:50px;height:50px;">
+                            {% else %}
+                            <i class="fa fa-globe" style="font-size:40px"></i>
+                            {% endif %}
+                            <div class="w-padding-left">
+                                <h4>{{ site.title }}</h4>
+                                <div>{{ request.get_host }} <small>&gt;</small> {{ site.slug }}</div>
+                            </div>
+                        </div>
+                        <h3 class="w-text-blue"><span class="title-content">{{ blog.title }}</span> - {{ site.title }}</h3>
+                        <p><span class="w-text-grey">{{ blog.created }}</span> - 
+                            <span class="meta-content">
+                                {% if blog.meta_description %}
+                                {{ blog.meta_description }}
+                                {% else %}
+                                Please provide a meta description by editing the snippet below. If you don't, 
+                                Google will try to find a relevant part of your post to show in the search results.
+                                {% endif %}
+                            </span>
+                        </p>
+                    </div>
+                </div>
+                <div class="tab-pane container w-white" style="overflow:auto" id="desktop">
+                    <div class="w-padding" style="width:150%">
+                        <div class="w-flex w-flex-start w-align-center">
+                            {% if site.icon %}
+                            <img src="{{ site.icon.url }}" alt="" style="width:50px;height:50px;">
+                            {% else %}
+                            <i class="fa fa-globe" style="font-size:40px"></i>
+                            {% endif %}
+                            <div class="w-padding-left">
+                                <h4>{{ site.title }}</h4>
+                                <div>{{ request.get_host }} <small>&gt;</small> {{ site.title }}&nbsp;&nbsp;<i class="fa fa-ellipsis-v"></i></div>
+                            </div>
+                        </div>
+                        <h3 class="w-text-blue"><span class="title-content">{{ blog.title }}</span> - {{ site.title }}</h3>
+                        <p><span class="w-text-grey">{{ blog.created }}</span> - 
+                            <span class="meta-content">
+                                {% if blog.meta_description %}
+                                {{ blog.meta_description }}
+                                {% else %}
+                                Please provide a meta description by editing the snippet below. If you don't, 
+                                Google will try to find a relevant part of your post to show in the search results.
+                                {% endif %}
+                            </span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="field">
+                <label for="description"><span class="w-text-red">*</span> Meta Description <small class="w-text-red">* a short description on what the post contains</small></label>
+                <textarea id="description" value="{{ blog.meta_description }}" style="height:150px">{{ blog.meta_description }}</textarea>
+                <small class="w-text-red">* </small> 
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-12 col-md-4 col-lg-3 col-xl-3">
+            <h6>Featured Image: 
+                {% if blog.image %}
+                <a class="w-text-red" href="{{ blog.image.url }}">
+                    <img class="feat-prev" src="{{ blog.image.url }}" style="width:150px;height:auto" alt="" />
+                </a>
+                {% else %}
+                <span class="w-text-red">No image selected yet</span>
+                {% endif %}
+            </h6>
+            <div class="field">
+                <div class="custom-file">
+                    <input type="file" class="custom-file-input blog-image" id="customFile">
+                    <label class="custom-file-label" for="customFile">Image</label>
+                </div>
+            </div>
+            <div class="field">
+                <label for="keywords"><span class="w-text-red">*</span> Keywords</label>
+                <input type="text" id="keywords" value="{{ blog.meta_keywords }}" />
+                <small class="w-text-red">*separate keywords with comma. e.g keyword1, keyword2</small> 
+            </div>
+            <div class="field">
+                <label for="status">Select Status</label>
+                <select id="blog-status">
+                    <option value="Published" {% if blog.status == "Published" %}selected{% endif %}>Published</option>
+                    <option value="Draft" {% if blog.status == "Draft" %}selected{% endif %}>Draft</option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="category">Select Category</label>
+                <select class="blog-cat" id="category">
+                    {% for c in categories %}
+                        <option value="{{ c.id }}" {% if c == blog.category %}selected{% endif %}>{{ c.title }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="field">
+                <label for="">Select Tags</label>
+                {% for t in tags %}
+                    <div class="custom-control custom-checkbox">
+                        <input type="checkbox" value="{{ t.slug }}" class="custom-control-input" id="tag_{{ t.id }}" name="blog-tags" {% if t in blog.tags.all %}checked{% endif %}>
+                        <label class="custom-control-label" for="tag_{{ t.id }}">{{ t.title }}</label>
+                  </div>
+                {% endfor %}
+            </div>
+            <button type="submit" class="btn btn-success w-padding h4 w-bold btn-block" id="edit-btn">Update Post</button>
+        </div>
+    </form>
+</div>
+
+{% endblock %}
+
+{% block script %}
+<script>
+    //let base_url = `http://127.0.0.1:8000/api/v2/`;
+    //getBlogCategories();
+    //getBlogTags();
+    $(".custom-file-input").on("change", function() {
+        var fileName = $(this).val().split("\\").pop();
+        $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
+
+        var reader = new FileReader();
+        var file = $(this)[0].files[0];
+        reader.onload = function(e) {
+            document.querySelector('.feat-prev').src = e.target.result;
+        }
+        reader.readAsDataURL(file);
+    });
+
+    $('#description').on('input', function() {
+        let value = $(this).val();
+        //console.log(value)
+        if(value.trim() != "") {
+            $('.meta-content').html(value);
+        }
+        else {
+            let temp = `Please provide a meta description by editing the snippet below. If you don't, 
+                        Google will try to find a relevant part of your post to show in the search results.`;
+            $('.meta-content').html(temp);
+        }
+    })
+    $('#title').on('input', function() {
+        let value = $(this).val();
+        //console.log(value)
+        $('.title-content').html(value);
+    })
+
+    tinymce.init({
+        selector: '.post',
+        plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount checklist mediaembed casechange export formatpainter pageembed linkchecker a11ychecker tinymcespellchecker permanentpen powerpaste advtable advcode editimage tinycomments tableofcontents footnotes mergetags autocorrect typography inlinecss',
+        toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table mergetags | addcomment showcomments | spellcheckdialog a11ycheck typography | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat',
+        tinycomments_mode: 'embedded',
+        tinycomments_author: 'Admin',
+        mergetags_list: [
+            {value: 'First.Name', title: 'First Name'},
+            {value: 'Email', title: 'Email'},
+        ],
+    });
+</script>
+<script>
+    $('#blog-edit-form').submit(function(e) {
+        e.preventDefault();
+        var url = `${base_url}blogs/edit_blog/`;
+        const formData = new FormData();
+        let image = $('.blog-image')[0].files[0]
+        //console.log(image)
+        const checkedTags = $('input[name="blog-tags"]:checked').map(function() {
+            return this.value;
+        }).get();
+        console.log(checkedTags)
+        formData.append('blog_id', '{{ blog.id }}');
+        formData.append('title', $('#title').val());
+        formData.append('status', $('#blog-status').val());
+        formData.append('image', image);
+        formData.append('post', $('#post').val());
+        formData.append('keywords', $('#keywords').val());
+        formData.append('description', $('#description').val());
+        formData.append('category_id', $('#category').val());
+        formData.append('tag_slugs', checkedTags);
+        $('#edit-btn').html('Updating...').attr('disabled', true)
+        fetch(url, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'Accept': 'application/json',
+                'X-CSRFToken': csrftoken,
+            },
+            body: formData
+        })
+        .then(res => {
+        return res.json()
+        })
+        .then(data => {
+            console.log(data)
+            if(data['status'] == 'success') {
+                swal('Success', data['message'], "success")
+            }
+            else if(data['status'] == 'error') {
+                swal('Error', data['message'], "error")
+            }
+            $('#edit-btn').html('Update Post').attr('disabled', false)
+        })
+        .catch(err => {
+            console.log(err);
+            swal('Error', "error occured", "error")
+            $('#edit-btn').html('Update Post').attr('disabled', false)
+        })
+    })
+</script>
+
+{% endblock %}

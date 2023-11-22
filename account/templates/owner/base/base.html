@@ -1,7 +1,7 @@
 {% load static %}
 {% load thumbnail %}
 <!doctype html>
-<html>
+<html> 
     <head> 
       <title>{% if site %}{{ site.title }}{% else %}iBlog{% endif %} - {% block title %}{% endblock %}</title>
       <meta charset="UTF-8" />
@@ -30,6 +30,7 @@
       <style>
          ::-webkit-scrollbar {width: 0px;}
         /* Loaer animation */
+        body {background:#fcf8f8}
     .loader-container {
         position: fixed;
         top: 0;
@@ -83,7 +84,7 @@
   }
   @media screen and (min-width: 650px) {
     main {
-      margin-left: 58px;
+      margin-left: 45px;
     }
   }
   .info-loader {
@@ -145,6 +146,7 @@
             </div>
         </div>
     </div>
+  
 
       <!-- Navigation Menu -->
       <input id="hamburger" class="hamburger" type="checkbox" />
@@ -172,7 +174,7 @@
           </li>
           
           <li class="{% block active2 %}{% endblock %}">
-            <a href="/user/site/">
+            <a href="{% if site %}/user/site/edit/{% else %}/user/site/create/{% endif %}">
               <i class="fa fa-globe"></i> My Site
             </a>
           </li>
@@ -218,7 +220,7 @@
           </li>
 
           <li>
-            <a href="/{{ site.title }}/">
+            <a href="{% if site %}/{{ site.slug }}/{% else %}#{% endif %}">
               <i class="fa fa-link"></i> Visit Website
             </a>
           </li>
@@ -246,10 +248,19 @@
 
       
       <main style="padding-top:70px">
+        {% if messages %}
+            <ul class="messages" style="list-style-type:none;">
+              {% for message in messages %}
+                <li class="alert alert-{{ message.tags }}"><i class="fa fa-{{ message.tags }}"></i>
+                  {{ message|safe }}
+                </li>
+              {% endfor %}
+            </ul>
+        {% endif %}
         {% if not site %}
             <ul class="messages" style="list-style-type:none;">
                 <li class="alert alert-danger"><i class="fa fa-warning"></i>
-                    You do not have an active site yet. <a href="#" class="w-text-blue">click here</a> to set up your site.
+                    You do not have an active site yet. <a href="/user/site/create/" class="w-text-blue">click here</a> to set up your site.
                 </li>
             </ul>
         {% endif %}
@@ -268,6 +279,7 @@
           $('.icon').click(function(){
             $('span.fa-bars').toggleClass("cancel");
           });
+          
        
     /*
       const disabledKeys = ['c', 'C', 'x', 'J', 'u', 'l'];

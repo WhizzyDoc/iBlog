@@ -1,7 +1,6 @@
 {% extends 'owner/base/base.html' %}
 {% load static %}
 {% load thumbnail %}
-
 {% block title %}Blogs{% endblock title %}
 {% block active3 %}active{% endblock %}
 {% block style %}
@@ -31,52 +30,120 @@
         #search:focus {
             border: 3px solid rgb(112, 112, 199);
         }
+        .pagination {
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .page-link {
+            padding: 10px 15px;
+            margin: 3px;
+            text-align: center;
+            font-size: 15px;
+            border: 1px solid #000;
+            background: #fff;
+            color: #000;
+        }
+        .page-link.active, .page-link:hover {
+            background: #000;
+            color: #fff;
+        }
+        @media screen and (max-width: 550px) {
+            .blog-list-table tr td:nth-child(3) {
+                display: none;
+            }
+            .blog-list-table tr th:nth-child(3) {
+                display: none;
+            }
+        }
+        @media screen and (max-width: 500px) {
+            .blog-list-table tr td:nth-child(4) {display: none}
+            .blog-list-table tr th:nth-child(4) {display: none}
+            .status-filter  {display:none}
+        }
+        @media screen and (max-width: 400px) {
+            .blog-list-table tr td:nth-child(2) {display: none}
+            .blog-list-table tr th:nth-child(2) {display: none}
+            .cat-filter  {display:none}
+        }
     </style>
 {% endblock %}
 
 {% block content %}
+{% if site %}
+  <!-- The delete Modal -->
+  <div class="modal fade" id="deleteModal">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+  
+        <!-- Modal Header -->
+        <div class="modal-header">
+          <h4 class="modal-title w-text-red"><i class="fa fa-trash"></i> Delete Blog</h4>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+  
+        <!-- Modal body -->
+        <div class="modal-body">
+          Are you sure you want to delete <b><q><span class="blog-tit"></span></q></b>?
+        </div>
+  
+        <!-- Modal footer -->
+        <form class="modal-footer" action="" id="delete-blog-form" method="POST">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger">Delete</button>
+          <button type="button" class="btn btn-warning" data-dismiss="modal">Close</button>
+        </form>
+  
+      </div>
+    </div>
+  </div>
 
 <div class="breadcrumb">
-    <a href="/user/index/">Home</a>&nbsp;&nbsp;&gt;&gt;&nbsp;&nbsp;
-    <a href="/user/blogs/">Blogs</a> 
+    <a href="/user/blogs/">Posts</a>&nbsp;&nbsp;
+    <a href="/user/blogs/add/"><button class="btn btn-success">New Post</button></a>
 </div>
 
-<form>
-    <div class="form-group mb-2">
-        <input type="text" class="form-control" id="search" value="" placeholder="Search blogs">
+<div>
+    <div class="form-group mb-3 w-right">
+        <input type="text" class="form-control" id="search" style="width:280px;font-size:20px" value="" placeholder="Search blogs">
     </div>
-</form>
+</div>
 
     <form class="w-flex mb-2">
         <input type="hidden" id="page" value="1">
         <select class="custom-select filter per-page-filter">
             <option disabled>Items per page</option>
-            <option value="10">10</option>
-            <option selected value="20">20</option>
+            <option selected value="10">10</option>
+            <option value="20">20</option>
             <option value="30">30</option>
         </select>
         <select class="custom-select filter cat-filter">
-          <option selected value="">All Categories</option>
+          <option selected value="all">All Categories</option>
         </select>
         <select class="custom-select filter status-filter">
             <option selected value="all">All Status</option>
             <option value="Published">Published</option>
             <option value="Draft">Draft</option>
         </select>
-        <select class="custom-select filter feat-filter">
-            <option selected value="all">All Posts</option>
-            <option value="true">Featured</option>
-            <option value="false">Non Featured</option>
+        <select class="custom-select filter sort-filter">
+            <option disabled>Sort By</option>
+            <option selected value="-created">Latest</option>
+            <option value="created">Oldest</option>
+            <option value="title">Title (A-Z)</option>
+            <option value="-title">Title (Z-A)</option>
+            <option value="category">Category (A-Z)</option>
+            <option value="-category">Category (Z-A)</option>
         </select>
     </form>
 
     <div class="table-responsive">
-        <table class="table table-striped table-bordered">
+        <table class="blog-list-table table table-striped table-bordered">
             <thead class="thead-dark">
             <tr class="w-small">
                 <th>Title</th>
                 <th>Category</th>
-                <th>Featured</th>
+                <th>Tags</th>
                 <th>Date</th>
             </tr>
             </thead>
@@ -94,15 +161,115 @@
         </table>
     </div>
 
+    <div class="pagination"></div>
+{% endif %}
 {% endblock %}
 
 {% block script %}
+<script>
+    function getBlogs() {
+    let stat = $('.status-filter').val()
+    let cat = $('.cat-filter').val()
+    let per_p = $('.per-page-filter').val()
+    let sort = $('.sort-filter').val()
+    let search = $('#search').val()
+    let page = $('#page').val()
+    let url = `${base_url}blogs/get_blogs/?page=${page}&per_page=${per_p}&search=${search}&status=${stat}&category_id=${cat}&sort_by=${sort}`;
+    $('.blog-table').empty().html(`<tr>${loader}</tr>`)
+    fetch(url, {
+        headers: {
+            'Accept': 'application/json' 
+        }
+    })
+    .then(res => {
+        return res.json()
+    })
+    .then(data => {
+        //console.log(data)
+        $('.blog-table').empty()
+        if(data['status'] == 'success') {
+            let pages = data.total_pages
+            $('.pagination').empty();
+            for(var i=0; i<pages; i++) {
+                let classN = "";
+                if((i+1) == data.page_number) {
+                    classN = "active"
+                }
+                var temp = `<a href="#" class="page-link ${classN}" data-id="${i+1}">${i+1}</a>`;
+                $('.pagination').append(temp);
+            }
+            $('.page-link').click(function(e) {
+                e.preventDefault();
+                let page = $(this).data('id');
+                $('#page').val(page);
+                getBlogs();
+            })
+            if(data.data !== undefined) {
+                blogs = data.data;
+                for(var i in blogs) {
+                    let status;
+                    let tags = "";
+                    let created = new Date(blogs[i].created).toLocaleString()
+                    if(blogs[i].status === 'Published') {
+                        status = `<a href="#" class="w-text-brown">Unpublish</a>&nbsp;|&nbsp;`
+                    }
+                    else {
+                        status = `<a href="#" class="w-text-green">Publish</a>&nbsp;|&nbsp;`
+                    }
+                    for(var t in blogs[i].tags) {
+                        tag = blogs[i].tags;
+                        tags += `${tag[t].title}, `;
+                    }
+                    var temp = `<tr class="w-small">
+                                    <td>
+                                        <div class="w-bold-x">${blogs[i].title}</div>
+                                        <p class="mt-2">
+                                            <a href="/user/blogs/${blogs[i].id}/edit/" class="w-text-blue">Edit</a>&nbsp;|&nbsp;
+                                            <a href="#" data-id="${blogs[i].id}" data-name="${blogs[i].title}" data-toggle="modal" data-target="#deleteModal" class="w-text-red blog-delete">Delete</a>&nbsp;|&nbsp;
+                                            ${status}
+                                            <a href="#" class="w-text-blue">Comments</a>
+                                        </p>
+                                    </td>
+                                    <td>${blogs[i].category.title}</td>
+                                    <td>${tags}</td>
+                                    <td>${created}</td>
+                                </tr>`;
+                    $('.blog-table').append(temp)
+                }
+                $('.blog-delete').click(function(e) {
+                    e.preventDefault();
+                    let id = $(this).data('id');
+                    let title = $(this).data('name');
+                    $('.blog-tit').html(title)
+                    $('#delete-blog-form').attr('action', `/user/blogs/${id}/delete/`)
+                })
+            }
+            else {
+                var temp = `<tr>
+                        <td colspan="4">${data['message']}</td>
+                    </tr>`;
+                $('.blog-table').append(temp)
+            }
+        }
+        else if(data['status'] == 'error') {
+            var temp = `<tr>
+                        <td colspan="4">${data['message']}</td>
+                    </tr>`;
+            $('.blog-table').append(temp)
+        }
+    })
+    .catch(err => {
+        console.log(err)
+    })
+}
+</script>
 <script>
     getCategories();
     getBlogs();
     $('.filter').change(function() {
         getBlogs();
     })
+    
     $('#search').on('input', function() {
         getBlogs();
     })

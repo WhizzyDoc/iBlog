@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from account.models import *
+from ..models import *
 from blog.models import *
 from django.contrib.auth.models import User
 
@@ -8,22 +8,45 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ['id', 'username',]
 
+class PlanSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Plan
+        fields = ['id', 'title', 'price', 'site_number', 'domain',
+                  'ecommerce', 'user_support', 'template_editing',
+                  'ai_assistant']
+
 class ProfileSerializer(serializers.ModelSerializer):
     user = UserSerializer(many=False, read_only=True)
     class Meta:
         model = Profile
         fields = ['id', 'user','firstName', 'lastName', 'email', 'phone_number', 'api_key', 'image',
-        'about', 'is_premium_user']
+        'about']
+
+class DeveloperSerializer(serializers.ModelSerializer):
+    user = UserSerializer(many=False, read_only=True)
+    class Meta:
+        model = Profile
+        fields = ['id', 'user','firstName', 'lastName', 'email', 'phone_number', 'api_key', 'image',
+        'about', 'github', 'facebook', 'linedin', 'x_account']
 
 class AuthorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = ['id', 'firstName', 'lastName', 'image']
 
+class TemplateCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TemplateCategory
+        fields = ['id', 'title', 'slug']
+
 class TemplateSerializer(serializers.ModelSerializer):
+    owner = DeveloperSerializer(many=False, read_only=True)
+    category = TemplateCategorySerializer(many=False, read_only=True)
+    plan = PlanSerializer(many=False, read_only=True)
     class Meta:
         model = Template
-        fields = ['id', 'title', 'image']
+        fields = ['id', 'title', 'image', 'description', 'category',
+                  'owner', 'plan']
 
 class SiteSerializer(serializers.ModelSerializer):
     class Meta:
@@ -47,8 +70,8 @@ class BlogSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True, read_only=True)
     class Meta:
         model = Blog
-        fields = ['id', 'title', 'slug', 'category', 'image', 'featured',
-        'status', 'author', 'post','tags', 'created']
+        fields = ['id', 'title', 'slug', 'category', 'image',
+        'status', 'author', 'post','tags', 'created', 'meta_keywords', 'meta_description']
 
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:

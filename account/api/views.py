@@ -25,7 +25,6 @@ import decimal
 import math
 import string
 
-
 class BlogViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Blog.objects.all()
     serializer_class = BlogSerializer
@@ -37,7 +36,8 @@ class BlogViewSet(viewsets.ReadOnlyModelViewSet):
         per_page = self.request.query_params.get('per_page')
         query = self.request.query_params.get('search')
         status = self.request.query_params.get('status')
-        featured = self.request.query_params.get('featured')
+        sort = self.request.query_params.get('sort_by')
+        cat_id = self.request.query_params.get('category_id')
         profile = Profile.objects.get(user=request.user)
         try:
             if page is None:
@@ -45,7 +45,7 @@ class BlogViewSet(viewsets.ReadOnlyModelViewSet):
             else:
                 page = int(page)
             if per_page is None:
-                per_page = 20
+                per_page = 10
             else:
                 per_page = int(per_page)
             if query is None:
@@ -54,35 +54,29 @@ class BlogViewSet(viewsets.ReadOnlyModelViewSet):
             stop = page * per_page
             total_items = 0
             blogs = None
-            feat = None
-            if status == 'all' and featured == 'all':
+            category = None
+            if status == 'all' and cat_id == 'all':
                 total_items = Blog.objects.filter(author=profile).filter(Q(title__icontains=query) |
                                                 Q(post__icontains=query)).count()
                 blogs = Blog.objects.filter(author=profile).filter(Q(title__icontains=query) |
-                                                Q(post__icontains=query))[start:stop]
-            elif status != 'all' and featured == 'all':
+                                                Q(post__icontains=query)).order_by(sort)[start:stop]
+            elif status != 'all' and cat_id == 'all':
                 total_items = Blog.objects.filter(author=profile, status=status).filter(Q(title__icontains=query) |
                                                 Q(post__icontains=query)).count()
                 blogs = Blog.objects.filter(author=profile, status=status).filter(Q(title__icontains=query) |
-                                                Q(post__icontains=query))[start:stop]
-            elif status == 'all' and featured != 'all':
-                if featured.lower() == 'true':
-                    feat = True
-                elif featured.lower() == 'false':
-                    feat = False
-                total_items = Blog.objects.filter(author=profile, featured=feat).filter(Q(title__icontains=query) |
+                                                Q(post__icontains=query)).order_by(sort)[start:stop]
+            elif status == 'all' and cat_id != 'all':
+                category = BlogCategory.objects.get(id=int(cat_id))
+                total_items = Blog.objects.filter(author=profile, category=category).filter(Q(title__icontains=query) |
                                                 Q(post__icontains=query)).count()
-                blogs = Blog.objects.filter(author=profile, featured=feat).filter(Q(title__icontains=query) |
-                                                Q(post__icontains=query))[start:stop]
-            elif status != 'all' and featured != 'all':
-                if featured.lower() == 'true':
-                    feat = True
-                elif featured.lower() == 'false':
-                    feat = False
-                total_items = Blog.objects.filter(author=profile, featured=feat, status=status).filter(Q(title__icontains=query) |
+                blogs = Blog.objects.filter(author=profile, category=category).filter(Q(title__icontains=query) |
+                                                Q(post__icontains=query)).order_by(sort)[start:stop]
+            elif status != 'all' and cat_id != 'all':
+                category = BlogCategory.objects.get(id=int(cat_id))
+                total_items = Blog.objects.filter(author=profile, category=category, status=status).filter(Q(title__icontains=query) |
                                                 Q(post__icontains=query)).count()
-                blogs = Blog.objects.filter(author=profile, featured=feat, status=status).filter(Q(title__icontains=query) |
-                                                Q(post__icontains=query))[start:stop]
+                blogs = Blog.objects.filter(author=profile, category=category, status=status).filter(Q(title__icontains=query) |
+                                                Q(post__icontains=query)).order_by(sort)[start:stop]
             total_pages = math.ceil(total_items/per_page)
             if blogs.exists():
                 return Response({
@@ -132,6 +126,117 @@ class BlogViewSet(viewsets.ReadOnlyModelViewSet):
                 'status': 'error',
                 'message': 'error occured'
             })
+    @action(detail=False,
+            methods=['get'])
+    def get_blog_tags(self, request, *args, **kwargs):
+        try:
+            profile = Profile.objects.get(user=request.user)
+            tags = Tag.objects.filter(owner=profile)
+            if tags.exists():
+                return Response({
+                    'status': 'success',
+                    'message': 'tags found',
+                    'data': [TagSerializer(t).data for t in tags]
+                })
+            else:
+                return Response({
+                    'status': 'success',
+                    'message': 'no tag found'
+                })
+        except:
+            return Response({
+                'status': 'error',
+                'message': 'error occured'
+            })
+    
+    @action(detail=False,
+            methods=['post'])
+    def edit_blog(self, request, *args, **kwargs):
+        profile = Profile.objects.get(user=request.user)
+        id = request.POST.get('blog_id')
+        title = request.POST.get('title')
+        slug = slugify(title)
+        status = request.POST.get('status')
+        image = request.FILES.get('image')
+        post = request.POST.get('post')
+        keywords = request.POST.get('keywords')
+        description = request.POST.get('description')
+        cat_id = request.POST.get('category_id')
+        #tag_slugs = request.POST.getlist('tag_slugs', [])
+        blog = Blog.objects.get(id=int(id), author=profile)
+        try:
+            category = BlogCategory.objects.get(id=int(cat_id))
+            #tags = Tag.objects.filter(slug__in=tag_slugs)
+            blog.title = title
+            blog.slug = slug
+            blog.status = status
+            blog.post = post
+            blog.meta_keywords = keywords
+            blog.meta_description = description
+            blog.category = category
+            blog.save()
+            if image is not None:
+                blog.image = image
+                blog.save()
+            """
+            for t in blog.tags.all():
+                blog.tags.remove(t)
+                blog.save()
+            for t in tags:
+                blog.tags.add(t)
+                blog.save()
+            """
+            return Response({
+                'status': 'success',
+                'message': f"post \'{blog.title}\' edited successfully"
+            })
+        except:
+            return Response({
+                'status': 'error',
+                'message': f"Error occured while editing post"
+            })
+    @action(detail=False,
+        methods=['post'])
+    def add_blog(self, request, *args, **kwargs):
+        profile = Profile.objects.get(user=request.user)
+        title = request.POST.get('title')
+        slug = slugify(title)
+        status = request.POST.get('status')
+        image = request.FILES.get('image')
+        post = request.POST.get('post')
+        keywords = request.POST.get('keywords')
+        description = request.POST.get('description')
+        cat_id = request.POST.get('category_id')
+        #tag_slugs = request.POST.getlist('tag_slugs', [])
+        try:
+            # check if the title does not exists
+            for b in profile.blogs_created.all():
+                if b.title == title:
+                    return Response({
+                        'status': 'error',
+                        'message': f"title \'{title}\' already exists!"
+                    })
+                else:
+                    pass
+            category = BlogCategory.objects.get(id=int(cat_id))
+            #tags = Tag.objects.filter(slug__in=tag_slugs)
+            new_blog = Blog(author=profile, title=title, slug=slug, post=post, meta_keywords=keywords, image=image,
+                            meta_description=description, category=category)
+            new_blog.save()
+            """
+            for t in tags:
+                new_blog.tags.add(t)
+                new_blog.save()
+            """
+            return Response({
+                'status': 'success',
+                'message': f"post \'{new_blog.title}\' created successfully"
+            })
+        except:
+            return Response({
+                'status': 'error',
+                'message': f"Error occured while creating post"
+            })
     """
     @action(detail=False,
             methods=['post'])
@@ -169,43 +274,7 @@ class BlogViewSet(viewsets.ReadOnlyModelViewSet):
                 'status': "error",
                 "message": "Invalid API token"
             })
-    @action(detail=False,
-            methods=['post'])
-    def edit_category(self, request, *args, **kwargs):
-        key = request.POST.get('api_token')
-        title = request.POST.get('title')
-        slug = slugify(title)
-        id = int(request.POST.get('id'))
-        try:
-            profile = Profile.objects.get(api_token=key)
-            user = profile.user
-            if admin_group in user.groups.all():
-                try:
-                    category = NewsCategory.objects.get(id=id)
-                    category.title = title
-                    category.slug = slug
-                    category.save()
-                    Log.objects.create(user=profile, action=f"edited news category {category.title}")
-                    return Response({
-                        'status': "success",
-                        "message": "category edited sucessfully",
-                        "data": NewsCategorySerializer(category).data,
-                    })
-                except:
-                    return Response({
-                        "status": "error",
-                        "message": f"category  with id \'{id}\' does not exist"
-                    })
-            else:
-                return Response({
-                    'status': "error",
-                    "message": "User is not authorized"
-                })
-        except:
-            return Response({
-                'status': "error",
-                "message": "invalid API token"
-            })
+    
     @action(detail=False,
             methods=['post'])
     def delete_category(self, request, *args, **kwargs):
