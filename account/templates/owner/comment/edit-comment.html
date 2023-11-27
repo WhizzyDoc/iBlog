@@ -1,0 +1,169 @@
+{% extends 'owner/base/base.html' %}
+{% load static %}
+{% load thumbnail %}
+{% block title %}Edit Comment{% endblock title %}
+{% block active3 %}active{% endblock %}
+{% block style %}
+    <style>
+        .breadcrumb {
+            padding: 10px;
+            font-size: 16px;
+            background: none;
+        }
+        .breadcrumb a {
+            color: red;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .form {
+            width: 100%;
+            background: transparent;
+            text-align: left;
+        }
+        .form form .field{
+            width: 100%;
+            padding: 10px;
+            position: relative;
+        }
+        .form form .col-12 {
+            padding: 8px;
+        }
+        form .field input, form .field select, form .field textarea{
+            width: 100%;
+            height: 50px;
+            border: 1px solid lightgrey;
+            border-radius: 5px;
+            padding-left: 15px;
+            font-size: 18px;
+            outline: none;
+        }
+        form .field select {
+            height: 50px;
+        }
+        form .field textarea {
+            resize: none;
+            height: 400px;
+            
+        }
+        form .field label {
+            width: 100%;
+            font-weight: 500;
+            font-size: 16px;
+            text-align: left;
+        }
+        .form header{
+            padding-top: 5px;
+            font-size: 27px;
+            font-weight: 600;
+            line-height: 33px;
+        }
+        form button{
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        
+    </style>
+{% endblock %}
+
+{% block content %}
+
+<div class="breadcrumb">
+    <a href="/user/blogs/{{ site.slug }}/">Posts</a>&nbsp;&nbsp;&gt;&gt;&nbsp;&nbsp;
+    <a href="/user/{{ site.slug }}/blogs/{{blog.id}}/comments/{{ comment.id }}/edit/">Edit Comment</a>
+</div>
+<div class="form">
+    <form id="msg-edit-form" class="row">
+        {% csrf_token %}
+
+        <div class="col-12 col-sm-12 col-md-5 col-lg-4 col-xl-4">
+            <div class="field">
+                <label for="title">Name</label>
+                <input type="text" id="title" value="{{ comment.name }}" readonly />
+            </div>
+            <div class="field">
+                <label for="comment">Comment</label>
+                <textarea id="comment" value="{{ comment.comment|linebreaks }}" style="height:150px" readonly>{{ comment.comment|linebreaks }}</textarea>
+            </div>
+            <div class="field">
+                <label for="status">Select Status</label>
+                <select id="comment-active">
+                    <option value="true" {% if comment.active %}selected{% endif %}>Show Comment</option>
+                    <option value="false" {% if not comment.active %}selected{% endif %}>Hide Comment</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-12 col-md-7 col-lg-8 col-xl-8">
+            <div class="field">
+                <label for="reply">Reply</label>
+                <textarea class="post" id="reply" value="{% if comment.reply %}{{ comment.reply|safe }}{% endif %}">{% if comment.reply %}{{ comment.reply|safe }}{% endif %}</textarea>
+            </div>
+            <button type="submit" class="btn btn-success w-padding h4 w-bold btn-block" id="edit-btn">Update Comment</button>
+        </div>
+    </form>
+</div>
+
+{% endblock %}
+
+{% block script %}
+<script>
+
+    tinymce.init({
+        selector: '.post',
+        plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount checklist mediaembed casechange export formatpainter pageembed linkchecker a11ychecker tinymcespellchecker permanentpen powerpaste advtable advcode editimage tinycomments tableofcontents footnotes mergetags autocorrect typography inlinecss',
+        toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table mergetags | addcomment showcomments | spellcheckdialog a11ycheck typography | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat',
+        tinycomments_mode: 'embedded',
+        tinycomments_author: 'Admin',
+        mergetags_list: [
+            {value: 'First.Name', title: 'First Name'},
+            {value: 'Email', title: 'Email'},
+        ],
+    });
+</script>
+<script>
+    $('#msg-edit-form').submit(function(e) {
+        e.preventDefault();
+        var url = `${base_url}blogs/edit_comment/`;
+        let reply = $('#reply').val();
+        if(reply.trim() == "") {
+            swal('Error', 'Field cannot be empty', 'error')
+            return;
+        }
+        const formData = new FormData();
+        formData.append('blog_id', '{{ blog.id }}');
+        formData.append('comment_id', '{{ comment.id }}');
+        formData.append('reply', reply);
+        formData.append('active', $('#comment-active').val());
+        $('#edit-btn').html('Updating...').attr('disabled', true)
+        fetch(url, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'Accept': 'application/json',
+                'X-CSRFToken': csrftoken,
+            },
+            body: formData
+        })
+        .then(res => {
+            return res.json()
+        })
+        .then(data => {
+            console.log(data)
+            if(data['status'] == 'success') {
+                swal('Success', data['message'], "success")
+                location.href = '/user/{{ site.slug }}/blogs/{{blog.id}}/comments/'
+            }
+            else if(data['status'] == 'error') {
+                swal('Error', data['message'], "error")
+            }
+            $('#edit-btn').html('Update Comment').attr('disabled', false)
+        })
+        .catch(err => {
+            console.log(err);
+            swal('Error', "error occured", "error")
+            $('#edit-btn').html('Update Comment').attr('disabled', false)
+        })
+    })
+</script>
+
+{% endblock %}

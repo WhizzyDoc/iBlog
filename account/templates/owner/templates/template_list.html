@@ -28,44 +28,319 @@
             border: 1px solid rgba(0, 0, 0, 0.1);
             font-size: 18px;
         }
-        #search:focus {
-            border: 3px solid rgb(112, 112, 199);
+        .pagination {
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .page-link {
+            padding: 10px 15px;
+            margin: 3px;
+            text-align: center;
+            font-size: 15px;
+            border: 1px solid #000;
+            background: #fff;
+            color: #000;
+        }
+        .page-link.active, .page-link:hover {
+            background: #000;
+            color: #fff;
         }
     </style>
 {% endblock %}
 
 {% block content %}
-
-    <div class="row">
-        <div class="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12 w-padding">
-            <form action="/user/templates/" method="get" class="form-group w-flex">
-                <input type="text" class="form-control" id="query" name="query" placeholder="Search Template">
-                <button type="submit" class="btn btn-primary"><i class="fa fa-search"></i></button>
-            </form>
+<!-- The delete Modal -->
+<div class="modal fade" id="detailModal">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+  
+        <!-- Modal Header -->
+        <div class="modal-header">
+          <h4 class="modal-title detail-header"></h4>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
         </div>
-        {% for t in templates %}
-            <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 w-padding">
-                <img class="" src="{% if t.image %}{{ t.image.url }}{% else %}{% endif %}" height="200px" width="100%" alt="" />
-                <div class="w-block">
-                    <h4 class="w-bold-xx w-padding-4">{{ t.title }}</h4>
-                    <div class="w-flex w-flex-between w-align-center">
-                        <button class="btn btn-danger" style="width:47%"><i class="fa fa-eye"></i> Preview</button>
-                        {% if t == site.template %}
-                        <button class="btn btn-success" style="width:47%"><i class="fa fa-check"></i> Active</button>
-                        {% else %}
-                        <button {% if not site %}disabled{% endif %} class="btn btn-primary" style="width:47%"><i class="fa fa-gear"></i> Activate</button>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-        {% empty %}
-        {% endfor %}
+  
+        <!-- Modal body -->
+        <div class="modal-body detail-body">
+          
+        </div>
+  
+        <!-- Modal footer -->
+        <div class="modal-footer">
+          <button data-id="" class="btn btn-success preview-btn">Preview</button>
+          <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+        </div>
+  
+      </div>
     </div>
+  </div>
+<div>
+
+    <div class="modal fade" id="activateModal">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+      
+            <!-- Modal Header -->
+            <div class="modal-header">
+              <h4 class="modal-title act-header"></h4>
+              <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+      
+            <!-- Modal body -->
+            <div class="modal-body act-body">
+              
+            </div>
+      
+            <!-- Modal footer -->
+            <div class="modal-footer">
+              <button data-id="" class="btn btn-success act-btn">Activate</button>
+              <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+            </div>
+      
+          </div>
+        </div>
+      </div>
+    <div>
+
+
+    <div class="form-group mb-3 w-right">
+        <input type="text" class="form-control" id="search" style="width:280px;font-size:20px" value="" placeholder="Search templates">
+    </div>
+</div>
+
+    <form class="w-flex mb-2">
+        <input type="hidden" id="page" value="1">
+        <select class="custom-select filter cat-filter w-margin-right" style="max-width:250px">
+          <option selected value="all">All Categories</option>
+          {% for c in categories %}
+          <option value="{{ c.id }}">{{ c.title }}</option>
+          {% endfor %}
+        </select>
+        <select class="custom-select filter plan-filter" style="max-width:250px">
+            <option selected value="all">All Templates</option>
+            <option value="free">Free Templates</option>
+            <option value="paid">Paid Templates</option>
+          </select>
+    </form>
+
+    <div class="row temp-con"></div>
+
+    <div class="pagination"></div>
 
 {% endblock %}
 
 {% block script %}
 <script>
-  
+  function getTemplates() {
+    let plan = $('.plan-filter').val()
+    let cat = $('.cat-filter').val()
+    let search = $('#search').val()
+    let page = $('#page').val()
+    let url = `${base_url}templates/get_templates/?page=${page}&search=${search}&plan=${plan}&category_id=${cat}`;
+    $('.temp-con').empty().html(`<div class="w-center" style="margin:auto">${loader}</div>`)
+    fetch(url, {
+        headers: {
+            'Accept': 'application/json' 
+        }
+    })
+    .then(res => {
+        return res.json()
+    })
+    .then(data => {
+        console.log(data);
+        $('.temp-con').empty();
+        if(data['status'] == 'success') {
+            let pages = data.total_pages
+            $('.pagination').empty();
+            for(var i=0; i<pages; i++) {
+                let classN = "";
+                if((i+1) == data.page_number) {
+                    classN = "active"
+                }
+                var temp = `<a href="#" class="page-link ${classN}" data-id="${i+1}">${i+1}</a>`;
+                $('.pagination').append(temp);
+            }
+            $('.page-link').click(function(e) {
+                e.preventDefault();
+                let page = $(this).data('id');
+                $('#page').val(page);
+                getTemplates();
+            })
+            if(data.data !== undefined) {
+                temps = data.data;
+                for(var i in temps) {
+                    var temp = `<div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 w-padding">
+                            <img class="temp-image" src="${temps[i].image}" height="200px" width="100%" alt="" />
+                            
+                            <div class="w-block">
+                                <h4 class="w-bold-xx w-padding-4">${temps[i].title}</h4>
+                                <div class="w-flex w-flex-between w-align-center">
+                                    <button data-id="${temps[i].id}" data-name="${temps[i].title}" data-toggle="modal" data-target="#detailModal" class="btn btn-info temp-det-btn" style="width:47%"><i class="fa fa-eye"></i> Details</button>
+                                    <button data-id="${temps[i].id}" data-name="${temps[i].title}" data-toggle="modal" data-target="#activateModal" class="btn btn-success temp-act-btn" style="width:47%"><i class="fa fa-gear"></i> Activate</button>
+                                </div>
+                            </div>
+                        </div>`;
+                    $('.temp-con').append(temp);
+                }
+                $('.temp-det-btn').click(function() {
+                    let id = $(this).data('id');
+                    let title = $(this).data('name');
+                    $('.detail-header').html(title);
+                    $('.preview-btn').data('id', id);
+                    getTempDetails(id)
+                })
+                $('.temp-act-btn').click(function() {
+                    let id = $(this).data('id');
+                    let title = $(this).data('name');
+                    $('.act-header').html(`Activate ${title} Template`);
+                    $('.act-btn').data('id', id);
+                    $('.act-btn').hide();
+                    activateTemp(id)
+                })
+            }
+            else {
+                $('.temp-con').append(`<h4 class="w-text-grey w-padding">${data['message']}</h4>`);
+            }
+        }
+        else if(data['status'] == 'error') {
+            $('.temp-con').append(`<h4 class="w-text-grey w-padding">${data['message']}</h4>`);
+        }
+    })
+    .catch(err => {
+        console.log(err)
+    })
+}
+</script>
+<script>
+    getTemplates();
+    $('.filter').change(function() {
+        getTemplates();
+    })
+    
+    $('#search').on('input', function() {
+        getTemplates();
+    })
+
+    function activateTemp(id) {
+        $('.act-body').empty().html(`<div style="margin:auto">${loader}</div>`);
+        let url = `${base_url}site/get_user_sites/`;
+        fetch(url, {
+            headers: {
+                'Accept': 'application/json' 
+            }
+        })
+        .then(res => {
+            return res.json()
+        })
+        .then(data => {
+            console.log(data)
+            $('.act-body').empty();
+            if(data['status'] == 'success') {
+                if(data.data !== undefined) {
+                    $('.act-btn').show();
+                    sites = data.data;
+                    $('.act-body').append(`<h4 class="w-bold">Select the site to activate template:</h4>`);
+                    for(var i in sites) {
+                        var temp = `<div class="custom-control custom-radio mb-2">
+                                    <input type="radio" class="custom-control-input" id="site_${sites[i].id}" name="site" value="${sites[i].id}">
+                                    <label class="custom-control-label h5" for="site_${sites[i].id}">${sites[i].title}</label>
+                                </div>`;
+                        $('.act-body').append(temp);
+                    }
+                }
+                else {
+                    $('.act-body').html(data['message'])
+                }
+            }
+            else if(data['status'] == 'error') {
+                $('.act-body').html(data['message'])
+            }
+        })
+        .catch(err => {
+            console.log(error);
+        })
+    }
+
+    $('.act-btn').click(function() {
+        temp_id = $(this).data('id');
+        site_id = $('input[name="site"]:checked').val();
+        if(site_id === undefined) {
+            swal('Error', 'kindly select a site', 'error');
+            return;
+        }
+        activateSiteTemp(temp_id, site_id);
+    })
+
+    function activateSiteTemp(temp, site) {
+        var url = `${base_url}site/activate_site_template/`;
+        const formData = new FormData();
+        formData.append('site_id', site);
+        formData.append('template_id', temp);
+        $('.act-btn').attr('disabled', true).html('Activating...');
+        fetch(url, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'Accept': 'application/json',
+                'X-CSRFToken': csrftoken,
+            },
+            body: formData
+        })
+        .then(res => {
+            return res.json()
+        })
+        .then(data => {
+            console.log(data)
+            if(data['status'] == 'success') {
+                swal('Success', data['message'], "success");
+            }
+            else if(data['status'] == 'error') {
+                swal('Error', data['message'], "error")
+            }
+            $('.act-btn').html('Activate').attr('disabled', false)
+        })
+        .catch(err => {
+            console.log(err);
+            swal('Error', "error occured", "error")
+            $('.act-btn').html('Activate').attr('disabled', false)
+        })
+    }
+
+    function getTempDetails(id) {
+        $('.detail-body').empty().html(`<div style="margin:auto">${loader}</div>`);
+        let url = `${base_url}templates/get_template/?template_id=${id}`;
+        fetch(url, {
+            headers: {
+                'Accept': 'application/json' 
+            }
+        })
+        .then(res => {
+            return res.json()
+        })
+        .then(data => {
+            console.log(data)
+            $('.detail-body').empty()
+            if(data['status'] == 'success') {
+                let t = data.data;
+                let p = data.plan;
+                let plan;
+                if(t.plan.level === 1) {plan = `<i class="fa fa-star"></i>&nbsp;Free`;}
+                else {plan = `<i class="fa fa-dollar"></i>&nbsp;Premium`}
+                var temp = `<img src="${t.image}" alt="" class="w-padding w-left" style="width:200px;height:auto">
+                        <div>
+                            <h3 class="w-bold w-text-navy">${t.title}</h3>
+                            <h5>By: <span class="w-bold w-text-red">${t.owner.firstName} ${t.owner.lastName}</span></h5>
+                            <h5><span class="w-text-grey"><i class="fa fa-briefcase"></i>&nbsp;${t.category.title}</span>&nbsp;&nbsp;&nbsp;<span class="w-text-orange">${plan}</span></h5>
+                            <div>${t.description}</div>
+                        </div>`;
+                $('.detail-body').append(temp)
+            }
+        })
+        .catch(err => {
+            console.log(err)
+        })
+    }
 </script>
 {% endblock %}

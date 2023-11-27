@@ -1,0 +1,144 @@
+ /* custom scroll bar */
+::-webkit-scrollbar {width: 10px;}
+::-webkit-scrollbar-track {background: #242526;}
+::-webkit-scrollbar-thumb {background: #3A3B3C;}
+
+a:link {
+    text-decoration: none;
+}
+a:hover {
+    cursor: pointer;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background: #fff;
+    width: 100%;
+    overflow-x: hidden;
+    font-family: "Gill Sans", sans-serif;;
+}
+/* Header */
+header {
+    position: sticky;
+    top:0;
+    width: 100%;
+    max-width: 100%;
+    padding: 20px;
+    z-index: 1000;
+    background: #000;
+    color: #fff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+header .title {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 0 20px;
+}
+header .title img {
+    width: 30px;
+    height: 30px;
+}
+header .title h3 {
+    padding: 10px 0 0 15px;
+    font-weight: 700;
+}
+.icon {
+    padding:8px 15px;
+    border: 3px solid gray;
+    border-radius: 5px;
+    margin-right: 20px;
+}
+.icon i {
+    font-size: 30px;
+}
+/* Navigation Bar */
+.nav ul {
+    list-style-type: none;
+    display: none;
+}
+.nav ul li {
+    display: inline-block;
+}
+.nav ul li a {
+    color: #fff;
+    font-weight: 600;
+    font-size: 20px;
+    padding: 40px 15px 0 15px;
+}
+.nav ul li a.active, .nav ul li a:hover {
+    color: yellow;
+}
+nav {
+    display: block;
+    position: fixed;
+    left: 0;
+    height: 100%;
+    width: 0%;
+    overflow: hidden;
+    transition: width .3s ease-in-out;
+    padding:0;
+    z-index: 900;
+    background: #fff;
+}
+nav ul {
+    list-style-type: none;
+    padding:0;
+}
+nav ul li a {
+    color: #000;
+    font-weight: 600;
+    font-size: 20px;
+    padding: 20px;
+    display: block;
+    width: 100%;
+}
+nav ul li a.active, nav ul li a:hover {
+    color: #fff;
+    background: #000;
+}
+nav.open {
+    width: 280px;
+}
+@media screen and (min-width:769px) {
+    .icon {
+        display: none;
+    }
+    .nav ul {display: block}
+    nav {display:none}
+}
+.secnav {
+    display: block;
+    background: #fff;
+    width: 100%;
+    padding: 15px;
+    padding-bottom: 10px;
+    box-shadow: 0 3px 5px 5px rgba(0, 0, 0, 0.22);
+    position: sticky;
+    position: -webkit-sticky !important;
+    top: 0;
+    z-index: 1000;
+}
+.secnav ul {
+    list-style-type: none;
+}
+.secnav ul li {
+    display: inline-block;
+    padding: 0;
+}
+.secnav ul li a {
+    color: #333;
+    font-size: 18px;
+    margin-right: 20px;
+}
+.secnav ul li a.active, .secnav ul li a:hover {
+    color: blue
+}
+@media screen and (max-width:768px) {
+    .secnav {display:none}
+    
+}
+

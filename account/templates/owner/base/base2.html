@@ -1,91 +1,82 @@
+<!DOCTYPE html>
 {% load static %}
 {% load thumbnail %}
-<!doctype html>
-<html>
+{% load humanize %}
+<html lang="en" dir="ltr">
     <head>
-      <title>MediQuiz - {% block title %}{% endblock %}</title>
-      <meta charset="UTF-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <meta name="title" content="MediQuiz" />
-      <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-      <meta name="author" content="Rigan Tech" />
-      <meta name="description" content="" />
-      <meta name="keywords" content="" />
-      <!-- Favicon-->
-      <link rel="shortcut icon" href="{% static 'image/mylogo.png' %}" />
-      <link rel="shortcut" href="{% static 'image/mylogo.png' %}">
-      <link rel="apple-touch-icon" href="{% static 'image/mylogo.png' %}"> 
-
-      <script src="https://kit.fontawesome.com/a076d05399.js"></script>
-      <script src="/static/owner/js/jquery-3.6.1.min.js"></script>
-      <script src="{% static 'owner/js/bootstrap.min.js' %}"></script>
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
-      <!-- script library used for customized alert box -->
-			<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.8/dist/sweetalert2.all.min.js"></script>
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" />
-      <link rel="stylesheet" href="{% static 'owner/css/style.css' %}">
-      <link rel="stylesheet" href="{% static 'owner/css/fontawesome.css' %}"/>
-      <link rel="stylesheet" href="{% static 'owner/css/bootstrap.min.css' %}"/>
-      <script src="https://cdn.tiny.cloud/1/ntpm8wccvu79outibfbyckg133geerx3v63a16nsz2c2bmsv/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
-      <style>
-        /* Loaer animation */
-    .loader-container {
+        <title>{% block title %}{% endblock %} - {% if site %}{{site.title}}{% endif %}</title>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="description" content="{% if site %}{{site.description}}{% endif %}">
+        <meta name="title" content="{% block title2 %}{% endblock %} - {% if site %}{{site.title}}{% endif %}">
+        <meta name="author" content="{% if site %}{{site.owner.firstName}} {{site.owner.lastName}}{% endif %}">
+        <meta name="keywords" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!-- For facebook sharing -->
+        <meta property="og:title" content="{% if site %}{{site.title}}{% endif %}">
+        <meta property="og:description" content="{% if site %}{{site.description}}{% endif %}">
+        <meta property="og:image:width" content="650">
+        <meta property="og:image:height" content="650">
+        <meta property="og:type" content="{% if site %}{{site.description}}{% endif %}" />
+        <meta property="og:url" content="">
+        <!-- For twitter sharing -->
+        <meta name="twitter:card" content="">
+        <meta name="twitter:title" content="{% if site %}{{site.title}}{% endif %}">
+        <meta name="twitter:description" content="{% if site %}{{site.description}}{% endif %}">
+        <meta name="twitter:image" content="{% if site %}{{site.icon.url}}{% endif %}">
+        <meta name="twitter:site" content="@">
+        <meta name="twitter:creator" content="@DocWhizzy">
+        <!-- Favicon-->
+        <link rel="shortcut icon" href="{% if site %}{{site.icon.url}}{% endif %}" />
+        <link rel="shortcut" href="{% if site %}{{site.icon.url}}{% endif %}">
+        <link rel="apple-touch-icon" href="{% if site %}{{site.icon.url}}{% endif %}">
+        <!-- Stylesheets -->
+        <link rel="stylesheet" href="/media/homepage/css/fontawesome.css">
+        <!--  Scripts -->
+        <script src="/media/assets/js/jquery-3.6.1.min.js"></script>
+      <script src="/media/assets/js/owl.carousel.min.js"></script>
+        <script src="/media/assets/js/bootstrap.min.js"></script>
+      <script src="/media/assets/js/sweetalert.min.js"></script>
+      <link rel="stylesheet" href="/media/assets/css/fontawesome.css"/>
+      <link rel="stylesheet" href="/media/assets/css/bootstrap.min.css"/>
+      <link rel="stylesheet" href="/media/assets/css/sweetalert.min.css"/>
+      <link rel="stylesheet" href="/media/assets/css/owl.carousel.min.css"/>
+        {% block style %}{% endblock %}
+        <style>
+           
+#load-container {
         position: fixed;
         top: 0;
         left: 0;
+        z-index: 100000;
         width: 100%;
         height: 100%;
-        display: flex;
-        justify-content: center;
-        z-index: 100000;
         background: rgba(0, 0, 0, 0.7);
-        align-items: center;
-      }
-      .loader-container .loader {
-        width: 120px;
-        height: 75px;
-        display: flex;
-        flex-wrap: wrap;
-        align-items: flex-end;
-        justify-content: space-between;
-      }
-      .loader-container .loader span {
-        font-size: 22px;
-        text-transform: uppercase;
-        margin: auto;
-        color: #fff;
-      }
-      .loader-container .loader .ball {
-        width: 25px;
-        height: 25px;
-        border-radius: 50%;
-        background: #fff;
-        animation: wbounce .4s alternate infinite;
-      }
-      .loader-container .loader .ball:nth-child(2) {
-        animation-delay: .13s;
-      }
-      .loader-container .loader .ball:nth-child(3) {
-        animation-delay: .26s;
-      }
-      @keyframes wbounce {
-        from {transform: scaleX(1.25)}
-        to {transform: translateY(-50px) scaleX(1)}
-      }
-      @-webkit-keyframes wbounce {
-        from {transform: scaleX(1.25)}
-        to {transform: translateY(-50px) scaleX(1)}
-      }
-      main {
-    padding: 20px;
-    margin: 0;
-  }
-  @media screen and (min-width: 650px) {
-    main {
-      margin-left: 58px;
     }
-  }
-  .info-loader {
+    .load-container img {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+    }
+    .load-container .spinner {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        border: none;
+        border-top: 5px solid #fff;
+        border-bottom: 5px solid #fff;
+        position: absolute;
+        left: calc(50% - 75px);
+        top: calc(50% - 75px);
+        animation: roll 1s linear infinite;
+        -webkit-animation: roll 1s linear infinite;
+        
+    }
+    .loader {
         width: 50px;
         height: 50px;
         border-radius: 50%;
@@ -104,180 +95,52 @@
         from{-webkit-transform:rotate(0deg)}
         to{-webkit-transform:rotate(360deg)}
     }
-      </style>
 
-      {% block style %}{% endblock %}
+        </style>
     </head>
-
     <body>
-      <!-- Loader animation -->
-      <div class="loader-container">
-        <div class="loader">
-          <div class="ball"></div>
-          <div class="ball"></div>
-          <div class="ball"></div>
-          <span>Loading...</span>
+    
+        <!-- Loader -->
+        <div class="load-container" id="load-container">
+            <img src="{% if site %}{{site.icon.url}}{% endif %}" alt="" />
+            <div class="spinner"></div>
         </div>
-      </div>
 
-      <!-- The Modal -->
-      <div class="modal fade" id="infoModal">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                
-                <!-- Modal Header -->
-                <div class="modal-header">
-                <h4 class="modal-title" id="infoTitle">
-                    
-                </h4>
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
-                </div>
-        
-                <!-- Modal body -->
-                <div class="modal-body" id="infoBody">
-                    
-                </div>
-                <!-- Modal footer -->
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-      <!-- Navigation Menu -->
-      <input id="hamburger" class="hamburger" type="checkbox" />
-      <label for="hamburger" class="hamburger">
-        <i></i>
-        <text>
-          <close>close</close>
-          <open>menu</open>
-        </text>
-      </label>
-
-      <nav class="primnav">
-        <ul>
-
-          <li class="{% block active1 %}{% endblock %}">
-            <a href="#">
-              <i class="fa fa-th-large"></i> Dashboard
-            </a>
-          </li>
-
-          <li class="{% block active12 %}{% endblock %}">
-            <a href="#">
-              <i class="fa fa-user"></i> Users
-            </a>
-          </li>
+        <nav class="navbar navbar-expand-md bg-dark navbar-dark sticky-top">
+            <a class="navbar-brand" href="#">
+                <img src="{% if site %}{{site.logo.url}}{% endif %}" alt="Logo" style="width:40px;">
+              </a>
+            <a class="navbar-brand" href="#">{% if site %}{{site.title}}{% endif %}</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="collapsibleNavbar">
+              <ul class="navbar-nav">
+                <li class="nav-item">
+                  <a class="nav-link" href="/">Home</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="/user/login/">Login</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">About</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="/user/register/">Register</a>
+                </li>    
+              </ul>
+            </div>  
+          </nav>
           
-          <li class="{% block active2 %}{% endblock %}">
-            <a href="#">
-              <i class="fa fa-group"></i> Groups
-              <div class="tag">{{ m.count }}</div>
-            </a>
-          </li>
-
-          <li class="{% block active3 %}{% endblock %}">
-            <a href="#">
-              <i class="fa fa-book"></i> Quiz
-              <div class="tag">{{ a.count }}</div>
-            </a>
-          </li>
-
-          <li class="{% block active11 %}{% endblock %}">
-            <a href="#">
-              <i class="fa fa-code"></i> Developers
-              <div class="tag">{{ b.count }}</div>
-            </a>
-          </li>
-
-          <li class="{% block active4 %}{% endblock %}">
-            <a href="#">
-              <i class="fa fa-user-secret"></i> Admins
-              <div class="tag">{{ p.count }}</div>
-            </a>
-          </li>
-
-          <li class="{% block active13 %}{% endblock %}">
-            <a href="#">
-              <i class="fa fa-bell"></i> Notifications
-              <div class="tag">{{ s.count }}</div>
-            </a>
-          </li>
-
-          <li class="{% block active10 %}{% endblock %}">
-            <a href="#">
-              <i class="fa fa-power-off"></i> Logout
-            </a>
-          </li>
-
-          <li>
-            <a href="#">
-              <i class="fa fa-link"></i> Visit Website
-            </a>
-          </li>
-
-        </ul>
-      </nav>
-
-      <div class="user">
-        <section>
-          {% if request.user.dev.photo %}
-            <img src="{{ request.user.dev.photo.url }}" alt="profile_photo" />
-          {% else %}
-            <img src="{% static 'owner/images/avatar.png' %}" alt="" />
-          {% endif %}
-          <section>
-            <!--
-            <div class="name">{{ request.user.owner.last_name }} {{ request.user.owner.first_name }} {{ request.user.owner.middle_name }}</div>
-            -->
-            <div class="name">{{ request.user.username }}</div>
-          </section>
-        </section>
-        <div class="heading">
-          <img class="logo" src="/static/owner/images/mylogo.png" alt="" />
-          <h2>MEDIQUIZ ADMIN</h2>
-        </div>
-      </div>
-
-      
-      <main>
-        
-
+          
         {% block content %}{% endblock %}
-
-      </main>
-
-      {% block script %}{% endblock %}
-
-      <script src="/static/owner/js/script.js"></script>
-      <script>
-        $(document).on('load', function() {
-        $('.loader-container').hide();
-      })
-    
-    
-          $('.icon').click(function(){
-            $('span.fa-bars').toggleClass("cancel");
-          });
-       
-    /*
-      const disabledKeys = ['c', 'C', 'x', 'J', 'u', 'l'];
-      const showAlert = e => {
-        e.preventDefault();
-        return $(function(){
-                    Swal.fire("Sorry, you cannot copy or inspect this site.");
-                  });
-      }
-      document.addEventListener("contextmenu", e => {
-        showAlert(e);
-      });
-      document.addEventListener("keydown", e => {
-        if((e.ctrlKey && disabledKeys.includes(e.key)) || e.key === 'F12') {
-          showAlert(e);
-        }
-      });
-      */
-    </script>
+        
+        <script src="{% static 'js/script.js' %}"></script>
+        <script>
+            $(document).ready(function() { 
+                $('#load-container').hide();
+            })
+        </script>
+        {% block script %}{% endblock %}
     </body>
 </html>

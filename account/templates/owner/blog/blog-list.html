@@ -100,8 +100,8 @@
   </div>
 
 <div class="breadcrumb">
-    <a href="/user/blogs/">Posts</a>&nbsp;&nbsp;
-    <a href="/user/blogs/add/"><button class="btn btn-success">New Post</button></a>
+    <a href="/user/blogs/{{site.slug}}/">Posts</a>&nbsp;&nbsp;
+    <a href="/user/{{ site.slug }}/blogs/add/"><button class="btn btn-success">New Post</button></a>
 </div>
 
 <div>
@@ -174,7 +174,7 @@
     let sort = $('.sort-filter').val()
     let search = $('#search').val()
     let page = $('#page').val()
-    let url = `${base_url}blogs/get_blogs/?page=${page}&per_page=${per_p}&search=${search}&status=${stat}&category_id=${cat}&sort_by=${sort}`;
+    let url = `${base_url}blogs/get_blogs/?site_slug={{ site.slug }}&page=${page}&per_page=${per_p}&search=${search}&status=${stat}&category_id=${cat}&sort_by=${sort}`;
     $('.blog-table').empty().html(`<tr>${loader}</tr>`)
     fetch(url, {
         headers: {
@@ -224,10 +224,10 @@
                                     <td>
                                         <div class="w-bold-x">${blogs[i].title}</div>
                                         <p class="mt-2">
-                                            <a href="/user/blogs/${blogs[i].id}/edit/" class="w-text-blue">Edit</a>&nbsp;|&nbsp;
+                                            <a href="/user/{{ site.slug }}/blogs/${blogs[i].id}/edit/" class="w-text-blue">Edit</a>&nbsp;|&nbsp;
                                             <a href="#" data-id="${blogs[i].id}" data-name="${blogs[i].title}" data-toggle="modal" data-target="#deleteModal" class="w-text-red blog-delete">Delete</a>&nbsp;|&nbsp;
                                             ${status}
-                                            <a href="#" class="w-text-blue">Comments</a>
+                                            <a href="/user/{{site.slug}}/blogs/${blogs[i].id}/comments/" class="w-text-blue">Comments</a>
                                         </p>
                                     </td>
                                     <td>${blogs[i].category.title}</td>
@@ -241,7 +241,7 @@
                     let id = $(this).data('id');
                     let title = $(this).data('name');
                     $('.blog-tit').html(title)
-                    $('#delete-blog-form').attr('action', `/user/blogs/${id}/delete/`)
+                    $('#delete-blog-form').attr('action', `/user/{{ site.slug }}/blogs/${id}/delete/`)
                 })
             }
             else {

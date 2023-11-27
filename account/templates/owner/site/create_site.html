@@ -7,27 +7,26 @@
     <style>
         .breadcrumb {
             padding: 10px;
-            font-size: 13px;
+            font-size: 16px;
             background: none;
         }
         .breadcrumb a {
             color: red;
-            font-size: 13px;
-            font-weight: 400;
+            font-size: 16px;
+            font-weight: 600;
         }
         .form {
             width: 100%;
-            padding: 10px;
-            background: #fff;
+            background: transparent;
             text-align: left;
-        }
-        .form form{
-            padding: 20px 0;
         }
         .form form .field{
             width: 100%;
-            padding: 20px 10px;
+            padding: 10px;
             position: relative;
+        }
+        .form form .col-12 {
+            padding: 8px;
         }
         form .field input, form .field select, form .field textarea{
             width: 100%;
@@ -48,8 +47,8 @@
         }
         form .field label {
             width: 100%;
-            font-weight: 600;
-            font-size: 18px;
+            font-weight: 500;
+            font-size: 16px;
             text-align: left;
         }
         .form header{
@@ -70,49 +69,64 @@
 
 <div class="breadcrumb">
     <a href="/user/index/">Home</a>&nbsp;&nbsp;&gt;&gt;&nbsp;&nbsp;
-    <a href="/user/site/create/">Site Setup</a>
+    <a href="/user/site/create/">Create Site</a>
 </div>
-<h4 class="w-bold-x h3">Setup Your Site Info</h4>
+{% if sites.count >= profile.plan.site_number %}
+<div class="alert alert-danger"><i class="fa fa-warning"></i>&nbsp;
+    Due to your current plan, you cannot have more than {{ profile.plan.site_number }} site{{ profile.plan.site_number | pluralize }}. 
+    <a href="/user/pricing/" class="w-text-blue">click here</a> to upgrade your site.
+</div>
+{% else %}
+<h4 class="w-bold-x h3">Setup Your New Site</h4>
 <div class="form">
     <form id="blog-add-form">
         {% csrf_token %}
-        <div class="field">
-            <label for="title"><span class="w-text-red">*</span> Site Title</label>
-            <input type="text" id="title" />
-        </div>
-        <div class="field">
-            <label for="tagline">Site Tagline</label>
-            <input type="text" id="tagline" />
-        </div>
-        
-        <div class="field">
-            <div class="custom-file">
-                <input type="file" class="custom-file-input site-logo" id="site-logo">
-                <label class="custom-file-label" for="site-logo">Site Logo</label>
+        <div class="col-12 col-sm-12 col-md-8 col-lg-9 col-xl-9">
+            <div class="field">
+                <label for="title"><span class="w-text-red">*</span> Site Title</label>
+                <input type="text" id="title" />
+            </div>
+            <div class="field">
+                <label for="tagline">Site Tagline</label>
+                <input type="text" id="tagline" />
+            </div>
+            <div class="field">
+                <label for="description">Description (What does your site do?)</label>
+                <textarea id="description" style="height:150px"></textarea>
+            </div>
+    
+            <div class="field">
+                <label for="about">About Your Site (This will be the content of your "About" Page)</label>
+                <textarea class="post" id="about"></textarea>
             </div>
         </div>
 
-        <div class="field">
-            <div class="custom-file">
-                <input type="file" class="custom-file-input site-icon" id="site-icon">
-                <label class="custom-file-label" for="site-icon">Site Icon</label>
+        <div class="col-12 col-sm-12 col-md-4 col-lg-3 col-xl-3">
+            <h5>Site Logo: 
+                <img class="logo-prev" src="" style="width:150px;height:auto" alt="" />
+                <span class="w-text-red">No image selected yet</span>
+            </h5>
+            <div class="field">
+                <div class="custom-file">
+                    <input type="file" class="custom-file-input site-logo" id="site-logo">
+                    <label class="custom-file-label" for="site-logo">Site Logo</label>
+                </div>
             </div>
+            <h5>Site Icon: 
+                <img class="icon-prev" src="" style="width:150px;height:auto" alt="" />
+                <span class="w-text-red">No image selected yet</span>
+            </h5>
+            <div class="field">
+                <div class="custom-file">
+                    <input type="file" class="custom-file-input site-icon" id="site-icon">
+                    <label class="custom-file-label" for="site-icon">Site Icon</label>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-success w-padding h4 w-bold btn-block" id="add-btn">Create Site</button>
         </div>
-        
-        <div class="field">
-            <label for="description">Description (What does your site do?)</label>
-            <textarea id="description" style="height:150px"></textarea>
-        </div>
-
-        <div class="field">
-            <label for="about">About Your Site (This will be the content of your "About" Page)</label>
-            <textarea class="post" id="about"></textarea>
-        </div>
-
-        <button type="submit" class="btn btn-success w-padding h4 w-bold btn-block" id="add-btn">Create Site</button>
     </form>
 </div>
-
+{% endif %}
 {% endblock %}
 
 {% block script %}
@@ -120,9 +134,27 @@
     //let base_url = `http://127.0.0.1:8000/api/v2/`;
     //getBlogCategories();
     //getBlogTags();
-    $(".custom-file-input").on("change", function() {
+    $(".site-logo").on("change", function() {
         var fileName = $(this).val().split("\\").pop();
         $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
+
+        var reader = new FileReader();
+        var file = $(this)[0].files[0];
+        reader.onload = function(e) {
+            document.querySelector('.logo-prev').src = e.target.result;
+        }
+        reader.readAsDataURL(file);
+    });
+    $(".site-icon").on("change", function() {
+        var fileName = $(this).val().split("\\").pop();
+        $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
+
+        var reader = new FileReader();
+        var file = $(this)[0].files[0];
+        reader.onload = function(e) {
+            document.querySelector('.icon-prev').src = e.target.result;
+        }
+        reader.readAsDataURL(file);
     });
 
     tinymce.init({
@@ -146,30 +178,21 @@
     }
     $('#blog-add-form').submit(function(e) {
         e.preventDefault();
-        var url = `${base_url}blogs/add_blog/`;
+        var url = `${base_url}site/create_site/`;
         if(!check_value($('#title').val())) {
             swal("Error", "Title cannot be empty", "error");
             return;
         }
-        if(!check_value($('#post').val())) {
-            swal("Error", "Post cannot be empty", "error");
-            return;
-        }
         const formData = new FormData();
-        let image = $('.blog-image')[0].files[0]
+        let icon = $('.site-icon')[0].files[0]
+        let logo = $('.site-logo')[0].files[0]
         //console.log(image)
-        const checkedTags = $('input[name="blog-tags"]:checked').map(function() {
-            return this.value;
-        }).get();
-        console.log(checkedTags)
         formData.append('title', $('#title').val());
-        formData.append('status', $('#blog-status').val());
-        formData.append('image', image);
-        formData.append('post', $('#post').val());
-        formData.append('keywords', $('#keywords').val());
+        formData.append('icon', icon);
+        formData.append('logo', logo);
+        formData.append('about', $('#about').val());
+        formData.append('tagline', $('#tagline').val());
         formData.append('description', $('#description').val());
-        formData.append('category_id', $('#category').val());
-        formData.append('tag_slugs', checkedTags);
         $('#add-btn').html('Creating Post...').attr('disabled', true)
         fetch(url, {
             method: 'POST',
@@ -187,7 +210,7 @@
             console.log(data)
             if(data['status'] == 'success') {
                 swal('Success', data['message'], "success")
-                location.href = '/user/blogs/';
+                location.href = '/user/templates/'
             }
             else if(data['status'] == 'error') {
                 swal('Error', data['message'], "error")

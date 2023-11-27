@@ -1,5 +1,52 @@
 import re
 import random
+from django.conf import Settings
+from django.core.mail import send_mail
+
+def send_reply_email(sender, receiver, name, reply, site):
+    subject = f"{site} Re:"
+    message = ''
+    from_email = "encrane04@gmail.com"  # Sender's email
+    recipient_list = [receiver]  # List of recipient emails
+    html_message = f"""
+    <h4>Dear {name},<h4><br><br>
+    {reply}
+    """
+
+def send_password_email(receiver, name, new_password):
+    subject = f"Password Reset Request"
+    message = ''
+    from_email = 'encrane04@gmail.com'  # Sender's email
+    recipient_list = [receiver]  # List of recipient emails
+    html_message = f"""
+    <div style="text-align:left; font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;">
+    <h4>Dear {name},<h4><br><br>
+    <p>You have requested a password reset. your new temporary password is <span style="color:blue;font-weight:600">{new_password}</span></p>
+    <p>Kindly change your password after logging in.</p><br><br>
+    <h4>Best Regards,<h4>
+    <h4>KosmosHR.</h4>
+    </div>
+    """
+    fail_silently = False
+    send_mail(subject, message, from_email, recipient_list, fail_silently, html_message=html_message)
+    
+def send_new_account_email(receiver, name):
+    subject = f"iBlog Registration Successful"
+    message = ''
+    from_email = 'rigantech@gmail.com'  # Sender's email
+    recipient_list = [receiver]  # List of recipient emails
+    html_message = f"""
+    <div style="text-align:left; font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;">
+    <h4>Dear {name},<h4><br><br>
+    <p>Your account has been successfully created on <b>iBlog</b>.</p>
+    <p>If you are seeing this email, it means you have registered your account on <b>iBlog</b></p>.
+    <br><br>
+    <h4>Best Regards,<h4>
+    <h4>iBlog Admin.</h4>
+    </div>
+    """
+    fail_silently = False
+    send_mail(subject, message, from_email, recipient_list, fail_silently, html_message=html_message)
 
 def slugify(s):
     s = s.lower().strip()

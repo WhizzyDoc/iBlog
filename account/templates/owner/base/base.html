@@ -1,4 +1,5 @@
 {% load static %}
+{% load humanize %}
 {% load thumbnail %}
 <!doctype html>
 <html> 
@@ -61,7 +62,7 @@
         width: 20px;
         height: 20px;
         border-radius: 50%;
-        background: #fff;
+        background: orangered;
         animation: wbounce .4s alternate infinite;
       }
       .loader .ball:nth-child(2) {
@@ -106,6 +107,21 @@
         from{-webkit-transform:rotate(0deg)}
         to{-webkit-transform:rotate(360deg)}
     }
+    .seconav {
+      padding-left: 50px;
+      max-height: 0px;
+      overflow-y: hidden;
+      transition: all .5s ease-in-out;
+    }
+    .seconav.active {
+      max-height: 300px;
+    }
+    .seconav li a {
+      padding: 10px 15px;
+    }
+    .seconav li a:hover, .seconav li a.active {
+      background: #222;
+    }
       </style>
 
       {% block style %}{% endblock %}
@@ -122,30 +138,58 @@
         </div>
       </div>
 
-      <!-- The Modal -->
-      <div class="modal fade" id="infoModal">
-        <div class="modal-dialog modal-dialog-centered">
+      <!-- Create category Modal -->
+      <div class="modal fade" id="createModal">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
             <div class="modal-content">
                 
                 <!-- Modal Header -->
                 <div class="modal-header">
-                <h4 class="modal-title" id="infoTitle">
-                    
-                </h4>
+                <h4 class="modal-title">Create <span id="create-type"></span></h4>
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
                 </div>
         
                 <!-- Modal body -->
-                <div class="modal-body" id="infoBody">
-                    
+                <div class="modal-body">
+                  <div class="form-group">
+                    <label for="usr">Enter Title:</label>
+                    <input type="text" class="form-control" id="create-title">
+                  </div>
                 </div>
                 <!-- Modal footer -->
                 <div class="modal-footer">
+                  <button type="button" class="btn btn-success create-button" data-dismiss="modal">Create</button>
                     <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
     </div>
+    <!-- create tag Modal -->
+    <div class="modal fade" id="editModal">
+      <div class="modal-dialog modal-dialog-centered modal-sm">
+          <div class="modal-content">
+              
+              <!-- Modal Header -->
+              <div class="modal-header">
+              <h4 class="modal-title">Edit <span id="edit-type"></span></h4>
+              <button type="button" class="close" data-dismiss="modal">&times;</button>
+              </div>
+      
+              <!-- Modal body -->
+              <div class="modal-body">
+                <div class="form-group">
+                  <label for="usr">Edit Title:</label>
+                  <input type="text" class="form-control" id="edit-title">
+                </div>
+              </div>
+              <!-- Modal footer -->
+              <div class="modal-footer">
+                <button type="button" class="btn btn-success edit-button" data-dismiss="modal">Edit</button>
+                  <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+              </div>
+          </div>
+      </div>
+  </div>
   
 
       <!-- Navigation Menu -->
@@ -168,29 +212,59 @@
           </li>
 
           <li class="{% block active12 %}{% endblock %}">
-            <a href="/user/profile/">
+            <a href="#">
               <i class="fa fa-user"></i> Profile
             </a>
           </li>
           
           <li class="{% block active2 %}{% endblock %}">
-            <a href="{% if site %}/user/site/edit/{% else %}/user/site/create/{% endif %}">
-              <i class="fa fa-globe"></i> My Site
+            <a href="#" class="drop">
+              <i class="fa fa-globe"></i> My Sites ({{ sites.count }})&nbsp;&nbsp;&nbsp;<i class="w-text-right fa fa-angle-down"></i>
             </a>
+            <ul class="seconav">
+              {% for s in sites %}
+              <li>
+                <a href="/user/site/{{ s.slug }}/edit/">{{ s.title }}</a>
+              </li>
+              {% endfor %}
+              <li>
+                <a href="/user/site/create/">Create New Site</a>
+              </li>
+            </ul>
           </li>
 
           <li class="{% block active3 %}{% endblock %}">
-            <a href="/user/blogs/">
-              <i class="fa fa-newspaper-o"></i> Blogs
-              <div class="tag">{{ a.count }}</div>
+            <a href="#" class="drop">
+              <i class="fa fa-newspaper-o"></i> Blogs&nbsp;&nbsp;&nbsp;<i class="w-align-right fa fa-angle-down"></i>
             </a>
+            <ul class="seconav">
+              {% for s in sites %}
+              <li>
+                <a href="/user/blogs/{{ s.slug }}/">{{ s.title }} - site</a>
+              </li>
+              {% empty %}
+              <li>
+                <a href="#">You have no active site</a>
+              </li>
+              {% endfor %}
+              <li>
+                <a href="/user/blog_categories/">Categories</a>
+                <a href="/user/blog_tags/">Tags</a>
+              </li>
+            </ul>
           </li>
 
           <li class="{% block active11 %}{% endblock %}">
-            <a href="#">
-              <i class="fa fa-comment"></i> Comments
-              <div class="tag">{{ b.count }}</div>
+            <a href="#" class="drop">
+              <i class="fa fa-comment"></i> Messages&nbsp;&nbsp;&nbsp;<i class="w-align-right fa fa-angle-down"></i>
             </a>
+            <ul class="seconav">
+              {% for s in sites %}
+              <li>
+                <a href="/user/site/{{ s.slug }}/messages/">{{ s.title }}</a>
+              </li>
+              {% endfor %}
+            </ul>
           </li>
 
           <li class="{% block active4 %}{% endblock %}">
@@ -200,16 +274,57 @@
           </li>
 
           <li class="{% block active13 %}{% endblock %}">
-            <a href="/user/notifications/">
+            <a href="#">
               <i class="fa fa-bell"></i> Notifications
               <div class="tag">{{ s.count }}</div>
             </a>
           </li>
 
-          <li class="{% block active14 %}{% endblock %}">
+          {% if profile.plan.level > 1 %}
+          <li class="{% block active17 %}{% endblock %}">
+            <a href="#" class="drop">
+              <i class="fa fa-shopping-cart"></i> iCommerce&nbsp;&nbsp;&nbsp;<i class="w-align-right fa fa-angle-down"></i>
+            </a>
+            <ul class="seconav">
+              <li><a href="#">Products</a></li>
+              <li><a href="#">Product Categories</a></li>
+              <li><a href="#">Carts</a></li>
+              <li><a href="#">Orders</a></li>
+              <li><a href="#">Transactions</a></li>
+              <li><a href="#">Settings</a></li>
+            </ul>
+          </li>
+          {% endif %}
+          {% if profile.plan.level > 2 %}
+          <li class="{% block active18 %}{% endblock %}">
+            <a href="#" class="drop">
+              <i class="fa fa-group"></i> Users&nbsp;&nbsp;&nbsp;<i class="w-align-right fa fa-angle-down"></i>
+            </a>
+            <ul class="seconav">
+              <li><a href="#">User Accounts</a></li>
+            </ul>
+          </li>
+          <li class="{% block active19 %}{% endblock %}">
             <a href="#">
-              <i class="fa fa-tasks"></i> Activities
-              <div class="tag">{{ s.count }}</div>
+              <i class="fa fa-android"></i> AI Support
+            </a>
+          </li>
+          {% endif %}
+          {% if profile.plan.level > 3 %}
+          <li class="{% block active20 %}{% endblock %}">
+            <a href="#" class="drop">
+              <i class="fa fa-paint-brush"></i> Theme&nbsp;&nbsp;&nbsp;<i class="w-align-right fa fa-angle-down"></i>
+            </a>
+            <ul class="seconav">
+              <li><a href="#">Template Editor</a></li>
+              <li><a href="#">Custom Pages</a></li>
+            </ul>
+          </li>
+          {% endif %}
+
+          <li class="{% block active15 %}{% endblock %}">
+            <a href="/user/pricing/">
+              <i class="fa fa-money"></i> Pricing
             </a>
           </li>
 
@@ -220,9 +335,20 @@
           </li>
 
           <li>
-            <a href="{% if site %}/{{ site.slug }}/{% else %}#{% endif %}">
-              <i class="fa fa-link"></i> Visit Website
+            <a href="#" class="drop">
+              <i class="fa fa-link"></i> Visit Websites ({{ sites.count }})&nbsp;&nbsp;&nbsp;<i class="w-text-right fa fa-angle-down"></i>
             </a>
+            <ul class="seconav">
+              {% for s in sites %}
+              <li>
+                <a href="/{{ s.slug }}/">{{ s.title }}</a>
+              </li>
+              {% empty %}
+              <li>
+                <a href="#">You have no active site</a>
+              </li>
+              {% endfor %}
+            </ul>
           </li>
 
         </ul>
@@ -245,7 +371,6 @@
           <h2 style="font-size: 1.5rem">&nbsp;&nbsp;iBlog Admin</h2>
         </div>
       </div>
-
       
       <main style="padding-top:70px">
         {% if messages %}
@@ -257,12 +382,15 @@
               {% endfor %}
             </ul>
         {% endif %}
-        {% if not site %}
-            <ul class="messages" style="list-style-type:none;">
-                <li class="alert alert-danger"><i class="fa fa-warning"></i>
-                    You do not have an active site yet. <a href="/user/site/create/" class="w-text-blue">click here</a> to set up your site.
-                </li>
-            </ul>
+        {% if sites.count < 1 %}
+            <div class="alert alert-danger"><i class="fa fa-warning"></i>&nbsp;
+                You do not have an active site yet. <a href="/user/site/create/" class="w-text-blue">click here</a> to set up your site.
+            </div>
+        {% endif %}
+        {% if profile.plan.level == 1 %}
+            <div class="alert alert-info"><i class="fa fa-info-circle"></i>&nbsp;
+                You are on a free plan mode. <a href="/user/pricing/" class="w-text-blue">click here</a> to upgrade your account.
+            </div>
         {% endif %}
 
         {% block content %}{% endblock %}
@@ -275,11 +403,13 @@
       <script src="/media/assets/js/script.js"></script>
       <script>
         $('.loader-container').hide();
-    
           $('.icon').click(function(){
             $('span.fa-bars').toggleClass("cancel");
           });
-          
+        $('.drop').click(function() {
+          //alert('hi')
+          $(this).siblings('.seconav').toggleClass('active')
+        })
        
     /*
       const disabledKeys = ['c', 'C', 'x', 'J', 'u', 'l'];
@@ -298,6 +428,112 @@
         }
       });
       */
+    </script>
+    <script>
+      $('.trigger-create-btn').click(function() {
+        let type = $(this).data('name');
+        $('#create-type').html(type);
+        $('.create-button').click(function() {
+          let url;
+          if(type == 'category') {
+            url = `${base_url}blogs/create_blog_category/`;
+          }
+          else if(type == 'tag') {
+            url = `${base_url}blogs/create_blog_tag/`;
+          }
+          let title = $('#create-title').val();
+          if(title.trim() == '') {
+            swal('Error', 'field cannot be empty', "error");
+            return;
+          }
+          const formData = new FormData();
+          formData.append('title', title);
+          $('.create-button').html('creating...').attr('disabled', true);
+          fetch(url, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'Accept': 'application/json',
+                'X-CSRFToken': csrftoken,
+            },
+            body: formData
+          })
+          .then(res => {
+              return res.json()
+          })
+          .then(data => {
+            console.log(data)
+            if(data['status'] == 'success') {
+                $('#create-title').val('')
+                swal('Success', data['message'], "success")
+                {% block addscript %}{% endblock %}
+            }
+            else if(data['status'] == 'error') {
+                swal('Error', data['message'], "error")
+            }
+            $('.create-button').html('create').attr('disabled', false)
+          })
+          .catch(err => {
+            console.log(err);
+            swal('Error', "error occured", "error")
+            $('.create-button').html('create').attr('disabled', false)
+          })
+        })
+      })
+
+      $('.trigger-edit-btn').click(function() {
+        let type = $(this).data('action');
+        let value = $(this).data('name');
+        let id = $(this).data('id');
+        $('#edit-type').html(type);
+        $('#edit-title').val(value);
+        $('.edit-button').click(function() {
+          let url;
+          if(type == 'category') {
+            url = `${base_url}blogs/edit_blog_category/`;
+          }
+          else if(type == 'tag') {
+            url = `${base_url}blogs/edit_blog_tag/`;
+          }
+          let title = $('#edit-title').val();
+          if(title.trim() == '') {
+            swal('Error', 'field cannot be empty', "error");
+            return;
+          }
+          const formData = new FormData();
+          formData.append('title', title);
+          formData.append('id', id);
+          $('.edit-button').html('updating...').attr('disabled', true);
+          fetch(url, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'Accept': 'application/json',
+                'X-CSRFToken': csrftoken,
+            },
+            body: formData
+          })
+          .then(res => {
+              return res.json()
+          })
+          .then(data => {
+            console.log(data)
+            if(data['status'] == 'success') {
+                swal('Success', data['message'], "success")
+                location.reload();
+            }
+            else if(data['status'] == 'error') {
+                swal('Error', data['message'], "error")
+            }
+            $('.edit-button').html('Edit').attr('disabled', false)
+          })
+          .catch(err => {
+            console.log(err);
+            swal('Error', "error occured", "error")
+            $('.edit-button').html('Edit').attr('disabled', false)
+          })
+        })
+      })
     </script>
     {% block script %}{% endblock %}
     </body>

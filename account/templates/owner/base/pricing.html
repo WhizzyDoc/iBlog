@@ -1,0 +1,231 @@
+{% extends 'owner/base/base.html' %}
+{% load static %}
+{% load humanize %}
+{% load thumbnail %}
+
+{% block title %}Pricing{% endblock title %}
+{% block active15 %}active{% endblock %}
+{% block style %}
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@700&family=Poppins:wght@400;500;600&display=swap');
+        h3 {font-weight:700;}
+        *{box-sizing:border-box}
+        .price-wrapper{
+  width: 100%;
+  max-width: 500px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 20px;
+  margin: 10px auto;
+  box-shadow: 10px 10px 15px rgba(0,0,0,0.05);
+}
+.price-wrapper .price-header{
+  height: 55px;
+  display: flex;
+  align-items: center;
+  border: 1px solid #ccc;
+  border-radius: 30px;
+  position: relative;
+}
+.price-header label{
+  height: 100%;
+  z-index: 2;
+  width: 25%;
+  display: flex;
+  cursor: pointer;
+  font-size: 16px;
+  position: relative;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.3s ease;
+}
+#tab-1:checked ~ .price-header .tab-1,
+#tab-2:checked ~ .price-header .tab-2,
+#tab-3:checked ~ .price-header .tab-3,
+#tab-4:checked ~ .price-header .tab-4{
+  color: #fff;
+}
+
+.price-header .slider{
+  position: absolute;
+  height: 85%;
+  width: 25%;
+  border-radius: inherit;
+  background: linear-gradient(145deg, #D5A3FF 0%, #77A5F8 100%);
+  transition: all 0.3s ease;
+}
+#tab-1:checked ~ .price-header .slider{
+  left: 0%;
+  width: 70px;
+  transform: translateX(5%);
+}
+#tab-2:checked ~ .price-header .slider{
+  left: 25%;
+}
+#tab-3:checked ~ .price-header .slider{
+  left: 50%;
+}
+#tab-4:checked ~ .price-header .slider{
+  left: 75%;
+}
+.price-wrapper input[type="radio"]{
+  display: none;
+}
+.card-area{
+  overflow: hidden;
+}
+.card-area .cards{
+  display: flex;
+  width: 400%;
+}
+.cards .price-row{
+  width: 25%;
+}
+.cards .price-row-1{
+  transition: all 0.3s ease;
+}
+#tab-1:checked ~ .card-area .cards .price-row-1{
+   margin-left: 0%;
+}
+#tab-2:checked ~ .card-area .cards .price-row-1{
+  margin-left: -25%;
+}
+#tab-3:checked ~ .card-area .cards .price-row-1{
+   margin-left: -50%;
+}
+#tab-4:checked ~ .card-area .cards .price-row-1{
+   margin-left: -75%;
+}
+.price-row .price-details{
+  margin: 20px 0;
+  text-align: center;
+  padding-bottom: 25px;
+  border-bottom: 1px solid #e6e6e6;
+}
+.price-details .price{
+  font-size: 50px;
+  font-weight: 600;
+  position: relative;
+  font-family: 'Noto Sans', sans-serif;
+}
+.price-details .price::before,
+.price-details .price::after{
+  position: absolute;
+  font-weight: 400;
+  font-family: "Poppins", sans-serif;
+}
+.price-details .price::before{
+  content: "$";
+  left: -13px;
+  top: 17px;
+  font-size: 20px;
+}
+.price-details .price::after{
+  content: "/month";
+  right: -50px;
+  bottom: 12px;
+  font-size: 13px;
+}
+.price-details p{
+  font-size: 18px;
+  margin-top: 5px;
+}
+.price-row .price-features {
+    padding-left: 0;
+}
+.price-row .price-features li{
+  display: flex;
+  font-size: 15px;
+  list-style: none;
+  margin-bottom: 10px;
+  align-items: center;
+}
+.price-features li i{
+  background: linear-gradient(#D5A3FF 0%, #77A5F8 100%);
+  background-clip: text;
+ -webkit-background-clip: text;
+ -webkit-text-fill-color: transparent;
+}
+.price-features li span{
+  margin-left: 10px;
+}
+.price-wrapper button{
+  width: 100%;
+  border-radius: 25px;
+  border: none;
+  outline: none;
+  height: 50px;
+  font-size: 18px;
+  color: #fff;
+  cursor: pointer;
+  margin-top: 20px;
+  background: linear-gradient(145deg, #D5A3FF 0%, #77A5F8 100%);
+  transition: transform 0.3s ease;
+}
+.price-wrapper button:hover{
+  transform: scale(0.98);
+}
+
+    </style>
+{% endblock %}
+
+{% block content %}
+
+<div class="price-wrapper">
+    {% for p in plans %}
+    <input type="radio" name="slider" id="tab-{{p.level}}" {% if p.level == profile.plan.level %}checked{% endif %}>
+    {% endfor %}
+    <div class="price-header">
+    {% for p in plans %}
+      <label for="tab-{{p.level}}" class="tab-{{p.level}}">{{ p.title }}</label>
+    {% endfor %}
+      <div class="slider"></div>
+    </div>
+    <div class="card-area">
+      <div class="cards">
+        {% for p in plans %}
+        <form class="price-row {% if p.level == 1 %}price-row-1{% endif %}" method="POST" action="/user/pricing/">
+          {% csrf_token %}
+          <div class="price-details">
+            <span class="price">{{ p.price }} </span>
+            <p>{{ p.title }} Plan</p>
+          </div>
+          <ul class="price-features">
+            <li><i class="fa fa-check"></i><span>{{ p.site_number }} active site{{ p.site_number | pluralize }}</span></li>
+            <li><i class="fa fa-check"></i><span>FREE 50+ Available Template Designs</span></li>
+            {% if p.domain %}
+            <li><i class="fa fa-check"></i><span>FREE Domain Registration for all active sites .com.ng</span></li>
+            {% endif %}
+            {% if p.ecommerce %}
+            <li><i class="fa fa-check"></i><span>Ecommerce and product sales support plugins</span></li>
+            {% endif %}
+            {% if p.template_editing %}
+            <li><i class="fa fa-check"></i><span>Template Customization Features</span></li>
+            {% endif %}
+            {% if p.user_support %}
+            <li><i class="fa fa-check"></i><span>Customer Account Registration Features</span></li>
+            {% endif %}
+            {% if p.ai_assistant %}
+            <li><i class="fa fa-check"></i><span>AI support as customer service</span></li>
+            {% endif %}
+          </ul>
+          <input type="hidden" name="plan_id" value="{{p.id}}" />
+          <button {% if p.level == profile.plan.level %}disabled{% else %}type="submit"{% endif %}>{% if p.level == profile.plan.level %}Active{% else %}Choose{% endif %} plan</button>
+        </form>
+        
+        {% endfor %}
+
+      </div>
+    </div>
+    
+  </div>
+
+
+
+{% endblock %}
+
+{% block script %}
+<script>
+
+</script>
+{% endblock %}

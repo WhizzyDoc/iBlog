@@ -68,8 +68,8 @@
 {% block content %}
 
 <div class="breadcrumb">
-    <a href="/user/blogs/">Posts</a>&nbsp;&nbsp;
-    <a href="/user/blogs/add/"><button class="btn btn-success">New Post</button></a>
+    <a href="/user/blogs/{{ site.slug }}/">Posts</a>&nbsp;&nbsp;
+    <a href="/user/{{ site.slug }}/blogs/add/"><button class="btn btn-success">New Post</button></a>
 </div>
 <h4 class="w-bold-x h3">Create New Post</h4>
 <div class="form">
@@ -187,24 +187,28 @@
                         <option value="{{ c.id }}">{{ c.title }}</option>
                     {% endfor %}
                 </select>
+                <a href="#" class="w-text-red mt-2 trigger-create-btn" data-toggle="modal" data-target="#createModal" data-name="category"><i class="fa fa-plus"></i> Create Category</a>
             </div>
             <div class="field">
+                <label for="comment">Allow Comments</label>
+                <select class="blog-com" id="comment">
+                    <option selected value="true">Yes</option>
+                    <option value="false">No</option>
+                </select>
+            </div>
+            <div class="field tags-list">
                 <label for="">Select Tags</label>
                 {% for t in tags %}
                     <div class="custom-control custom-checkbox">
-                        <input type="checkbox" value="{{ t.slug }}" class="custom-control-input" id="tag_{{ t.id }}" name="blog-tags">
+                        <input type="checkbox" value="{{ t.id }}" class="custom-control-input blog-tags" id="tag_{{ t.id }}" name="blog-tags">
                         <label class="custom-control-label" for="tag_{{ t.id }}">{{ t.title }}</label>
                   </div>
                 {% endfor %}
             </div>
+            <a href="#" class="w-text-red mt-2 mb-2 trigger-create-btn" data-toggle="modal" data-target="#createModal" data-name="tag"><i class="fa fa-plus"></i> Create Tag</a>
             <button type="submit" class="btn btn-success w-padding h4 w-bold btn-block" id="add-btn">Create Post</button>    
         </div>
 
-        
-        
-        
-        
-        
         
         </form>
 </div>
@@ -279,10 +283,6 @@
         const formData = new FormData();
         let image = $('.blog-image')[0].files[0]
         //console.log(image)
-        const checkedTags = $('input[name="blog-tags"]:checked').map(function() {
-            return this.value;
-        }).get();
-        console.log(checkedTags)
         formData.append('title', $('#title').val());
         formData.append('status', $('#blog-status').val());
         formData.append('image', image);
@@ -290,7 +290,11 @@
         formData.append('keywords', $('#keywords').val());
         formData.append('description', $('#description').val());
         formData.append('category_id', $('#category').val());
-        formData.append('tag_slugs', checkedTags);
+        formData.append('allow_comments', $('.blog-com').val());
+        $('.blog-tags:checked').each(function() {
+            formData.append('tag_ids', $(this).val())
+        })
+        formData.append('site_slug', '{{ site.slug }}');
         $('#add-btn').html('Creating Post...').attr('disabled', true)
         fetch(url, {
             method: 'POST',
@@ -308,7 +312,7 @@
             console.log(data)
             if(data['status'] == 'success') {
                 swal('Success', data['message'], "success")
-                location.href = '/user/blogs/';
+                location.href = '/user/blogs/{{ site.slug }}/';
             }
             else if(data['status'] == 'error') {
                 swal('Error', data['message'], "error")
@@ -323,4 +327,17 @@
     })
 </script>
 
+{% endblock %}
+{% block addscript %}
+if(data['type'] == 'category') {
+    var temp = `<option selected value="${data['data'].id}">${data['data'].title}</option>`;
+    $('.blog-cat').append(temp);
+}
+else if(data['type'] == 'tag') {
+    var temp = `<div class="custom-control custom-checkbox">
+        <input type="checkbox" value="${data['data'].id}" class="custom-control-input" id="tag_${data['data'].id}" name="blog-tags">
+        <label class="custom-control-label" for="tag_${data['data'].id}">${data['data'].title}</label>
+  </div>`;
+    $('.tags-list').append(temp);
+}
 {% endblock %}

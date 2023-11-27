@@ -1,0 +1,152 @@
+{% extends 'owner/base/base.html' %}
+{% load static %}
+{% load thumbnail %}
+{% block title %}Blog Tags{% endblock title %}
+{% block active3 %}active{% endblock %}
+{% block style %}
+    <style>
+        .breadcrumb {
+            padding: 10px;
+            font-size: 20px;
+            background: none;
+        }
+        .breadcrumb a {
+            color: red;
+            font-size: 20px;
+            font-weight: 600;
+        }
+        #search-form {
+            float: right;
+            clear: both;
+            content: "";
+        }
+        #search {
+            padding: 10px;
+            min-width: 250px;
+            outline: none;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            font-size: 18px;
+        }
+        #search:focus {
+            border: 3px solid rgb(112, 112, 199);
+        }
+        .pagination {
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .page-link {
+            padding: 10px 15px;
+            margin: 3px;
+            text-align: center;
+            font-size: 15px;
+            border: 1px solid #000;
+            background: #fff;
+            color: #000;
+        }
+        .page-link.active, .page-link:hover {
+            background: #000;
+            color: #fff;
+        }
+        @media screen and (max-width: 550px) {
+            .blog-list-table tr td:nth-child(3) {
+                display: none;
+            }
+            .blog-list-table tr th:nth-child(3) {
+                display: none;
+            }
+        }
+        @media screen and (max-width: 500px) {
+            .blog-list-table tr td:nth-child(4) {display: none}
+            .blog-list-table tr th:nth-child(4) {display: none}
+            .status-filter  {display:none}
+        }
+        @media screen and (max-width: 400px) {
+            .blog-list-table tr td:nth-child(2) {display: none}
+            .blog-list-table tr th:nth-child(2) {display: none}
+            .cat-filter  {display:none}
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+  <!-- The delete Modal -->
+  <div class="modal fade" id="deleteModal">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+  
+        <!-- Modal Header -->
+        <div class="modal-header">
+          <h4 class="modal-title w-text-red"><i class="fa fa-trash"></i> Delete Tag</h4>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+  
+        <!-- Modal body -->
+        <div class="modal-body">
+          Are you sure you want to delete <b><q><span class="blog-tit"></span></q></b>?
+        </div>
+  
+        <!-- Modal footer -->
+        <form class="modal-footer" action="" id="delete-tag-form" method="POST">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger">Delete</button>
+          <button type="button" class="btn btn-warning" data-dismiss="modal">Close</button>
+        </form>
+  
+      </div>
+    </div>
+  </div>
+
+<div class="breadcrumb">
+    <a href="/user/blog_tags/">Tags</a>&nbsp;&nbsp;
+    <a href="#" class="trigger-create-btn" data-toggle="modal" data-target="#createModal" data-name="tag">
+        <button class="btn btn-success">New Tag</button>
+    </a>
+</div>
+
+
+    <div class="table-responsive">
+        <table class="blog-list-table table table-striped table-bordered">
+            <thead class="thead-dark">
+            <tr class="w-small">
+                <th>Title</th>
+                <th colspan="2">Actions</th>
+            </tr>
+            </thead>
+            <tbody class="cat-table">
+                {% for t in tags %}
+                <tr>
+                    <td>{{ t.title }}</td>
+                    <td>
+                        <button class="btn btn-info trigger-edit-btn" data-toggle="modal" data-target="#editModal" data-name="{{t.title}}" data-action="tag" data-id="{{t.id}}">Edit</button>
+                        <button class="btn btn-danger trigger-delete-btn" data-toggle="modal" data-target="#deleteModal" data-name="{{t.title}}" data-id="{{t.id}}">Delete</button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td>No tags</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="pagination"></div>
+{% endblock %}
+
+{% block script %}
+<script>
+    
+    $('.trigger-delete-btn').click(function(e) {
+                    e.preventDefault();
+                    let id = $(this).data('id');
+                    let title = $(this).data('name');
+                    $('.blog-tit').html(title)
+                    $('#delete-tag-form').attr('action', `/user/blog_tags/${id}/delete/`)
+                })
+</script>
+{% endblock %}
+{% block addscript %}
+location.reload();
+{% endblock %}

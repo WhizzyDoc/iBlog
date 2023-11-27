@@ -1,0 +1,267 @@
+{% extends 'owner/base/base.html' %}
+{% load static %}
+{% load thumbnail %}
+{% block title %}Comments{% endblock title %}
+{% block active3 %}active{% endblock %}
+{% block style %}
+    <style>
+        .breadcrumb {
+            padding: 10px;
+            font-size: 20px;
+            background: none;
+        }
+        .breadcrumb a {
+            color: red;
+            font-size: 20px;
+            font-weight: 600;
+        }
+        #search-form {
+            float: right;
+            clear: both;
+            content: "";
+        }
+        #search {
+            padding: 10px;
+            min-width: 250px;
+            outline: none;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            font-size: 18px;
+        }
+        #search:focus {
+            border: 3px solid rgb(112, 112, 199);
+        }
+        .pagination {
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .page-link {
+            padding: 10px 15px;
+            margin: 3px;
+            text-align: center;
+            font-size: 15px;
+            border: 1px solid #000;
+            background: #fff;
+            color: #000;
+        }
+        .page-link.active, .page-link:hover {
+            background: #000;
+            color: #fff;
+        }
+        @media screen and (max-width: 800px) {
+            .blog-list-table tr td:nth-child(3) {display: none}
+            .blog-list-table tr th:nth-child(3) {display: none}
+            .sort-filter option:nth-child(6){display:none}
+            .sort-filter option:nth-child(7){display:none}
+        }
+        @media screen and (max-width: 650px) {
+            .blog-list-table tr td:nth-child(4) {display: none}
+            .blog-list-table tr th:nth-child(4) {display: none}
+        }
+        @media screen and (max-width: 500px) {
+            .blog-list-table tr td:nth-child(5) {display: none}
+            .blog-list-table tr th:nth-child(5) {display: none}
+        }
+        @media screen and (max-width: 350px) {
+            .blog-list-table tr td:nth-child(2) {display: none}
+            .blog-list-table tr th:nth-child(2) {display: none}
+            .sort-filter option:nth-child(4){display:none}
+            .sort-filter option:nth-child(5){display:none}
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+{% if site %}
+  <!-- The delete Modal -->
+  <div class="modal fade" id="deleteModal">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+  
+        <!-- Modal Header -->
+        <div class="modal-header">
+          <h4 class="modal-title w-text-red"><i class="fa fa-trash"></i> Delete Comment</h4>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+  
+        <!-- Modal body -->
+        <div class="modal-body">
+          Are you sure you want to delete <b><span class="blog-tit"></span>'s comment</b>?
+        </div>
+  
+        <!-- Modal footer -->
+        <form class="modal-footer" action="" id="delete-blog-form" method="POST">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger">Delete</button>
+          <button type="button" class="btn btn-warning" data-dismiss="modal">Close</button>
+        </form>
+  
+      </div>
+    </div>
+  </div>
+
+<div class="breadcrumb">
+    <a href="/user/blogs/{{site.slug}}/">Posts</a>&nbsp;&nbsp;&gt;&gt;&nbsp;&nbsp;
+    <a href="/user/{{site.slug}}/blogs/{{blog.id}}/comments/">Comments</a>
+</div>
+
+<div>
+    <div class="form-group mb-3 w-right">
+        <input type="text" class="form-control" id="search" style="width:280px;font-size:20px" value="" placeholder="Search comments">
+    </div>
+</div>
+
+    <form class="w-flex mb-2">
+        <input type="hidden" id="page" value="1">
+        <select class="custom-select filter per-page-filter" style="max-width:250px">
+            <option disabled>Items per page</option>
+            <option selected value="10">10</option>
+            <option value="20">20</option>
+            <option value="30">30</option>
+        </select>
+        <select class="custom-select filter sort-filter" style="max-width:250px">
+            <option disabled>Sort By</option>
+            <option selected value="-date">Latest</option>
+            <option value="date">Oldest</option>
+            <option value="name">Names (A-Z)</option>
+            <option value="-name">Names (Z-A)</option>
+        </select>
+    </form>
+
+    <div class="table-responsive">
+        <table class="blog-list-table table table-striped table-bordered">
+            <thead class="thead-dark">
+            <tr class="w-small">
+                <th>Comment</th>
+                <th>Name</th>
+                <th>Active</th>
+                <th>Replied</th>
+                <th>Date</th>
+            </tr>
+            </thead>
+            <tbody class="blog-table">
+                <tr>
+                    <td colspan="4" class="w-center">
+                    <div class="loader">
+                        <div class="ball w-black"></div>
+                        <div class="ball w-black"></div>
+                        <div class="ball w-black"></div>
+                    </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="pagination"></div>
+{% endif %}
+{% endblock %}
+
+{% block script %}
+<script>
+    function getMessages() {
+    let per_p = $('.per-page-filter').val()
+    let sort = $('.sort-filter').val()
+    let search = $('#search').val()
+    let page = $('#page').val()
+    let url = `${base_url}blogs/get_blog_comments/?blog_id={{ blog.id }}&page=${page}&per_page=${per_p}&search=${search}&sort_by=${sort}`;
+    $('.blog-table').empty().html(`<tr>${loader}</tr>`)
+    fetch(url, {
+        headers: {
+            'Accept': 'application/json' 
+        }
+    })
+    .then(res => {
+        return res.json()
+    })
+    .then(data => {
+        //console.log(data)
+        $('.blog-table').empty()
+        if(data['status'] == 'success') {
+            let pages = data.total_pages
+            $('.pagination').empty();
+            for(var i=0; i<pages; i++) {
+                let classN = "";
+                if((i+1) == data.page_number) {
+                    classN = "active"
+                }
+                var temp = `<a href="#" class="page-link ${classN}" data-id="${i+1}">${i+1}</a>`;
+                $('.pagination').append(temp);
+            }
+            $('.page-link').click(function(e) {
+                e.preventDefault();
+                let page = $(this).data('id');
+                $('#page').val(page);
+                getMessages();
+            })
+            if(data.data !== undefined) {
+                coms = data.data;
+                for(var i in coms) {
+                    let status, active;
+                    let created = new Date(coms[i].date).toLocaleString()
+                    if(coms[i].reply === null) {
+                        status = `<i class="fa fa-times w-text-red"></i>`
+                    }
+                    else {
+                        status = `<i class="fa fa-check-circle w-text-green"></i>`
+                    }
+                    if(coms[i].active) {
+                        active = `<i class="fa fa-check-circle w-text-green"></i>`
+                    }
+                    else {
+                        active = `<i class="fa fa-times w-text-red"></i>`
+                    }
+                    var temp = `<tr class="w-small">
+                                    <td>
+                                        <div class="w-bold-x">${coms[i].comment}</div>
+                                        <p class="mt-2">
+                                            <a href="/user/{{ site.slug }}/blogs/{{blog.id}}/comments/${coms[i].id}/edit/" class="w-text-blue">Reply</a>&nbsp;|&nbsp;
+                                            <a href="#" data-id="${coms[i].id}" data-name="${coms[i].name}" data-toggle="modal" data-target="#deleteModal" class="w-text-red blog-delete">Delete</a>&nbsp;|&nbsp;
+                                        </p>
+                                    </td>
+                                    <td>${coms[i].name}</td>
+                                    <td>${active}</td>
+                                    <td>${status}</td>
+                                    <td>${created}</td>
+                                </tr>`;
+                    $('.blog-table').append(temp)
+                }
+                $('.blog-delete').click(function(e) {
+                    e.preventDefault();
+                    let id = $(this).data('id');
+                    let title = $(this).data('name');
+                    $('.blog-tit').html(title)
+                    $('#delete-blog-form').attr('action', `/user/{{ site.slug }}/blogs/{{blog.id}}/comments/${id}/delete/`)
+                })
+            }
+            else {
+                var temp = `<tr>
+                        <td colspan="5">${data['message']}</td>
+                    </tr>`;
+                $('.blog-table').append(temp)
+            }
+        }
+        else if(data['status'] == 'error') {
+            var temp = `<tr>
+                        <td colspan="5">${data['message']}</td>
+                    </tr>`;
+            $('.blog-table').append(temp)
+        }
+    })
+    .catch(err => {
+        console.log(err)
+    })
+}
+</script>
+<script>
+    getMessages();
+    $('.filter').change(function() {
+        getMessages();
+    })
+    
+    $('#search').on('input', function() {
+        getMessages();
+    })
+</script>
+{% endblock %}

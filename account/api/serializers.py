@@ -13,7 +13,7 @@ class PlanSerializer(serializers.ModelSerializer):
         model = Plan
         fields = ['id', 'title', 'price', 'site_number', 'domain',
                   'ecommerce', 'user_support', 'template_editing',
-                  'ai_assistant']
+                  'ai_assistant', 'level']
 
 class ProfileSerializer(serializers.ModelSerializer):
     user = UserSerializer(many=False, read_only=True)
@@ -25,9 +25,9 @@ class ProfileSerializer(serializers.ModelSerializer):
 class DeveloperSerializer(serializers.ModelSerializer):
     user = UserSerializer(many=False, read_only=True)
     class Meta:
-        model = Profile
+        model = Developer
         fields = ['id', 'user','firstName', 'lastName', 'email', 'phone_number', 'api_key', 'image',
-        'about', 'github', 'facebook', 'linedin', 'x_account']
+        'about', 'github', 'facebook', 'linkedin', 'x_account']
 
 class AuthorSerializer(serializers.ModelSerializer):
     class Meta:
@@ -76,4 +76,14 @@ class BlogSerializer(serializers.ModelSerializer):
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
-        fields = ['id', 'name', 'comment', 'date', 'active']
+        fields = ['id', 'name', 'comment', 'reply', 'date', 'active']
+
+class ContactSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Contact
+        fields = ['id', 'name', 'email', 'message', 'reply', 'date']
+
+class NotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = ['id', 'title', 'note', 'date']

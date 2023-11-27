@@ -16,9 +16,10 @@ class TemplateCategory(models.Model):
 
 class Plan(models.Model):
     title = models.CharField(max_length=200)
-    price = models.DecimalField(decimal_places=2, max_digits=10, default=0.00)
+    price = models.BigIntegerField(default=0)
     site_number = models.IntegerField(default=1)
-    domain = models.CharField(max_length=250, null=True, blank=True)
+    level = models.PositiveIntegerField(default=0)
+    domain = models.BooleanField(default=False)
     ecommerce = models.BooleanField(default=False)
     user_support = models.BooleanField(default=False)
     template_editing = models.BooleanField(default=False)
@@ -26,7 +27,7 @@ class Plan(models.Model):
     def __str__(self):
         return self.title
     class Meta:
-        ordering = ['id']
+        ordering = ['level','id']
 
 class Profile(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="profile")
@@ -39,6 +40,9 @@ class Profile(models.Model):
     about = HTMLField(blank=True, null=True)
     plan = models.ForeignKey(Plan, on_delete=models.SET_NULL, related_name="plan_users", null=True, blank=True)
     deadline = models.DateTimeField(null=True, blank=True)
+    facebook = models.URLField(null=True, blank=True)
+    linkedin = models.URLField(null=True, blank=True)
+    x_account = models.URLField(null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
 
     def __str__(self):
@@ -100,10 +104,32 @@ class Site(models.Model):
     about = HTMLField(null=True, blank=True)
     logo = models.ImageField(upload_to="site/logo/", null=True, blank=True)
     icon = models.ImageField(upload_to="site/icon/", null=True, blank=True)
-    template = models.ForeignKey(Template, on_delete=models.DO_NOTHING, related_name="sites", null=True, blank=True)
+    template = models.ForeignKey(Template, on_delete=models.SET_NULL, related_name="sites", null=True, blank=True)
     active = models.BooleanField(default=True)
     created = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return self.title
     class Meta:
         ordering = ['title']
+
+class Contact(models.Model):
+    site = models.ForeignKey(Site, on_delete=models.CASCADE, related_name="messages")
+    name = models.CharField(max_length=150)
+    email = models.EmailField(max_length=150)
+    message = models.TextField()
+    reply = HTMLField(null=True, blank=True)
+    date = models.DateTimeField(default=timezone.now)
+    def __str__(self):
+        return self.message
+    class Meta:
+        ordering = ['-date']
+
+class Notification(models.Model):
+    owner = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name="notifications")
+    title = models.CharField(max_length=150)
+    note = models.TextField()
+    date = models.DateTimeField(default=timezone.now)
+    def __str__(self):
+        return self.title
+    class Meta:
+        ordering = ['-date']

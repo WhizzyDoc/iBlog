@@ -1,0 +1,145 @@
+{% extends 'owner/base/base2.html' %}
+{% load static %}
+{% load thumbnail %}
+
+
+{% block title %}Home{% endblock %}
+{% block title2 %}Home{% endblock %}
+{% block active1 %}active{% endblock %}
+{% block active11 %}active{% endblock %}
+{% block style %}
+    <style>
+        body {
+            padding-bottom: 0 !important;
+        }
+        * {box-sizing:border-box}
+.carousel-inner {
+    background-image: linear-gradient(bottom, #454b55, #15141a);
+  background-image: -webkit-linear-gradient(bottom, #454b55, #15141a);
+}
+.call {
+    padding: 10px 15px;
+    cursor: pointer;
+}
+.login-btn {
+    background: orange;
+    color: white;
+    outline: none;
+    border: 4px solid orange;
+    transition: all .5s ease;
+}
+.login-btn:hover {
+    background: transparent;
+    color: orange;
+}
+.reg-btn {
+    background: transparent;
+    color: orange;
+    outline: none;
+    border: 4px solid orange;
+    transition: all .5s ease;
+}
+.reg-btn:hover {
+    background: orange;
+    color: #fff
+}
+    </style>
+{% endblock %}
+
+{% block content %}
+
+<!-- FrontPage -->
+<!-- Slideshow container -->
+<div id="demo" class="carousel slide" data-ride="carousel">
+
+    <!-- Indicators -->
+    <ul class="carousel-indicators">
+      <li data-target="#demo" data-slide-to="0" class="active"></li>
+      <li data-target="#demo" data-slide-to="1"></li>
+      <li data-target="#demo" data-slide-to="2"></li>
+      <li data-target="#demo" data-slide-to="3"></li>
+      <li data-target="#demo" data-slide-to="4"></li>
+    </ul>
+  
+    <!-- The slideshow -->
+    <div class="carousel-inner">
+
+      <div class="carousel-item active">
+        <img src="/media/templato/assets/images/banner-item-01.jpg" alt="Los Angeles">
+        <div class="carousel-caption">
+            <div>
+                <a href="/user/login"><button class="login-btn call">LOGIN</button></a>
+                <a href="/user/register"><button class="reg-btn call">REGISTER</button></a>
+            </div>
+            <h3>Unleash Your Creativity! Build, Customize, and Thrive with iBlog</h3>
+            <p>Welcome to iBlog, the ultimate platform where your ideas take center stage. Whether you're a passionate blogger, 
+                an aspiring entrepreneur, or a creative soul, we've got everything you need to bring your vision to life.
+            </p>
+        </div>
+      </div>
+      <div class="carousel-item">
+        <img src="/media/templato/assets/images/banner-item-02.jpg" alt="Chicago">
+        <div class="carousel-caption">
+            <div>
+                <a href="/user/login"><button class="login-btn call">LOGIN</button></a>
+                <a href="/user/register"><button class="reg-btn call">REGISTER</button></a>
+            </div>
+            <h3>Create Stunning Blogs</h3>
+            <p>Seamlessly craft and share your thoughts with our user-friendly blog creation tools. Express yourself, engage your 
+                audience, and make your voice heard.
+            </p>
+        </div>
+      </div>
+      <div class="carousel-item">
+        <img src="/media/templato/assets/images/banner-item-03.jpg" alt="New York">
+        <div class="carousel-caption">
+            <div>
+                <a href="/user/login"><button class="login-btn call">LOGIN</button></a>
+                <a href="/user/register"><button class="reg-btn call">REGISTER</button></a>
+            </div>
+            <h3>Choose From Beautiful Templates</h3>
+            <p>Select from a diverse range of eye-catching templates to personalize your site. Make it uniquely yours with just a few cicks</p>
+        </div>
+      </div>
+      <div class="carousel-item">
+        <img src="/media/templato/assets/images/banner-item-04.jpg" alt="New York">
+        <div class="carousel-caption">
+            <div>
+                <a href="/user/login"><button class="login-btn call">LOGIN</button></a>
+                <a href="/user/register"><button class="reg-btn call">REGISTER</button></a>
+            </div>
+            <h3>Ecommerce Made Easy</h3>
+            <p>Dive into the world of online commerce effortlessly. From setting up your store to managing transactions, we've got your back.</p>
+        </div>
+      </div>
+      <div class="carousel-item">
+        <img src="/media/templato/assets/images/banner-item-05.jpg" alt="New York">
+        <div class="carousel-caption">
+            <div>
+                <a href="/user/login"><button class="login-btn call">LOGIN</button></a>
+                <a href="/user/register"><button class="reg-btn call">REGISTER</button></a>
+            </div>
+            <h3>Customize Every Detail</h3>
+            <p>Tailor your site to perfection. Our customization options allow you to control every aspect, ensuring your site reflects your 
+                personality or brand</p>
+        </div>
+      </div>
+    </div>
+  
+    <!-- Left and right controls -->
+    <a class="carousel-control-prev" href="#demo" data-slide="prev">
+      <span class="carousel-control-prev-icon"></span>
+    </a>
+    <a class="carousel-control-next" href="#demo" data-slide="next">
+      <span class="carousel-control-next-icon"></span>
+    </a>
+  
+  </div>
+    
+{% endblock %}
+{% block script %}
+<script>
+$("#demo").carousel({interval: 8000});
+
+</script>
+{% endblock %}
